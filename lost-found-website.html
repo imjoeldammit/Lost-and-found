@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Lost & Found · Pico W Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --ink: #0e0e0e;
+  --ink2: #444;
+  --ink3: #888;
+  --paper: #f5f2ed;
+  --paper2: #edeae4;
+  --paper3: #e2ddd6;
+  --line: rgba(14,14,14,0.1);
+  --green: #1a7a3c;
+  --green-bg: #d4edda;
+  --amber: #92400e;
+  --amber-bg: #fef3c7;
+  --red: #991b1b;
+  --red-bg: #fee2e2;
+  --accent: #c8553d;
+  --pico-green: #1e6b30;
+}
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+/* ── Header ─────────────────────────────── */
+header {
+  background: var(--ink);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 800;
+  color: #f5f2ed;
+  letter-spacing: -0.02em;
+}
+
+.logo span { color: var(--accent); }
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.status-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+}
+
+.dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+.header-btn {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.2);
+  background: transparent;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.header-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* ── Hero ────────────────────────────────── */
+.hero {
+  background: var(--ink);
+  padding: 60px 32px 48px;
+  position: relative;
+  overflow: hidden;
+}
+
+.hero::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,85,61,0.15);
+}
+
+.hero::after {
+  content: '';
+  position: absolute;
+  top: 20px; right: 20px;
+  width: 180px; height: 180px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,85,61,0.1);
+}
+
+.hero-inner { max-width: 960px; margin: 0 auto; position: relative; z-index: 1; }
+
+.hero-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--accent);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.hero-tag::before {
+  content: '';
+  display: inline-block;
+  width: 20px; height: 1px;
+  background: var(--accent);
+}
+
+.hero-title {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(32px, 5vw, 56px);
+  font-weight: 800;
+  color: #f5f2ed;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  margin-bottom: 20px;
+}
+
+.hero-title em { color: var(--accent); font-style: normal; }
+
+.hero-desc {
+  font-size: 15px;
+  color: rgba(245,242,237,0.55);
+  max-width: 520px;
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chip {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.5);
+}
+
+/* ── Main layout ─────────────────────────── */
+.main { max-width: 960px; margin: 0 auto; padding: 32px; }
+
+/* ── Stats row ───────────────────────────── */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.stat {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px 18px;
+  position: relative;
+  overflow: hidden;
+}
+
+.stat::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+}
+
+.stat.s1::after { background: var(--green); }
+.stat.s2::after { background: #d97706; }
+.stat.s3::after { background: var(--red); }
+.stat.s4::after { background: #2563eb; }
+
+.stat-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 6px;
+}
+
+.stat-val {
+  font-family: 'Syne', sans-serif;
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--ink);
+  line-height: 1;
+}
+
+/* ── Simulator grid ──────────────────────── */
+.sim-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  margin-bottom: 20px;
+}
+
+/* ── Panel ───────────────────────────────── */
+.panel {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+}
+
+.ph {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--paper2);
+}
+
+.ph-title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink3);
+}
+
+.badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 9px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+}
+
+.b-green  { background: var(--green-bg);  color: var(--green); }
+.b-amber  { background: var(--amber-bg);  color: var(--amber); }
+.b-red    { background: var(--red-bg);    color: var(--red); }
+.b-gray   { background: var(--paper3);    color: var(--ink2); }
+.b-blue   { background: #dbeafe;          color: #1e3a5f; }
+
+/* ── Hardware panel ──────────────────────── */
+.hw-body {
+  padding: 20px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.pico-board {
+  width: 100%;
+  background: var(--pico-green);
+  border-radius: 8px;
+  padding: 12px 10px 10px;
+}
+
+.pico-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.pico-lbl {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: rgba(255,255,255,0.45);
+  letter-spacing: 0.1em;
+}
+
+.pico-chip {
+  background: #0d1a0f;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8px;
+  color: rgba(255,255,255,0.4);
+}
+
+.pico-leds {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.hw-led {
+  width: 11px; height: 11px;
+  border-radius: 50%;
+  background: rgba(0,0,0,0.4);
+  border: 1.5px solid rgba(0,0,0,0.3);
+  transition: background 0.1s;
+  position: relative;
+}
+
+.hw-led.on-g  { background: #22c55e; }
+.hw-led.on-r  { background: #ef4444; }
+.hw-led.on-o  { background: #f59e0b; }
+
+@keyframes bl-g { 0%,100%{background:#22c55e} 50%{background:rgba(0,0,0,.4)} }
+@keyframes bl-r { 0%,100%{background:#ef4444} 50%{background:rgba(0,0,0,.4)} }
+.hw-led.bl-g { animation: bl-g 0.25s ease 5; }
+.hw-led.bl-r { animation: bl-r 0.2s  ease 6; }
+
+.pico-pins {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 2px;
+}
+
+.pin-strip {
+  display: flex;
+  gap: 3px;
+}
+
+.pin {
+  width: 5px; height: 6px;
+  background: #c0b090;
+  border-radius: 1px;
+}
+
+.ov2640 {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper2);
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.lens-wrap {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  background: #111827;
+  border: 2px solid #374151;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.lens-mid {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: #0d1117;
+  border: 1.5px solid #4b5563;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.lens-iris {
+  width: 12px; height: 12px;
+  border-radius: 50%;
+  background: #1e3a5c;
+  transition: background 0.3s, transform 0.3s;
+}
+
+.lens-iris.cap { background: #93c5fd; transform: scale(1.15); }
+
+.lens-info { flex: 1; }
+.lens-name { font-size: 12px; font-weight: 500; color: var(--ink); margin-bottom: 2px; }
+.lens-spec { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--ink3); }
+.lens-state { font-size: 11px; color: var(--green); margin-top: 2px; }
+
+.obj-select {
+  width: 100%;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--paper);
+  color: var(--ink);
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.obj-select:focus { border-color: var(--ink3); }
+
+.scan-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  background: var(--ink);
+  color: var(--paper);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.scan-btn:hover { background: #2d2a26; }
+.scan-btn:active { transform: scale(0.98); }
+.scan-btn:disabled { background: var(--paper3); color: var(--ink3); cursor: not-allowed; transform: none; }
+
+.btn-indicator {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+}
+
+.btn-indicator.scanning { background: #f59e0b; animation: pulse 0.5s infinite; }
+
+/* ── Serial monitor ──────────────────────── */
+.serial {
+  background: #0d1117;
+  min-height: 360px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding: 10px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  line-height: 2;
+}
+
+.serial::-webkit-scrollbar { width: 4px; }
+.serial::-webkit-scrollbar-track { background: transparent; }
+.serial::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+.log-row { display: flex; gap: 10px; animation: li .15s ease; }
+@keyframes li { from{opacity:0;transform:translateY(3px)} to{opacity:1;transform:none} }
+
+.log-ts  { color: #2d4a32; min-width: 48px; flex-shrink: 0; }
+.c-info  { color: #4ade80; }
+.c-warn  { color: #fbbf24; }
+.c-err   { color: #f87171; }
+.c-data  { color: #60a5fa; }
+.c-ai    { color: #c084fc; }
+.c-sys   { color: #f0abfc; font-weight: 700; }
+
+/* ── Result panel ────────────────────────── */
+.result-panel {
+  display: none;
+  padding: 18px 20px;
+  animation: li 0.3s ease;
+}
+
+.result-panel.show { display: block; }
+
+.result-top {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-bottom: 14px;
+}
+
+.r-emoji { font-size: 44px; line-height: 1; flex-shrink: 0; }
+
+.r-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 2px;
+}
+
+.r-cat { font-size: 12px; color: var(--ink3); margin-bottom: 10px; }
+
+.conf-wrap { display: flex; align-items: center; gap: 8px; }
+.conf-track { flex: 1; height: 5px; background: var(--paper3); border-radius: 3px; overflow: hidden; }
+.conf-bar   { height: 100%; background: var(--green); border-radius: 3px; transition: width .7s ease; width: 0; }
+.conf-num   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--green); min-width: 38px; text-align: right; font-weight: 700; }
+
+.r-desc {
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.65;
+  background: var(--paper2);
+  border-radius: 8px;
+  padding: 10px 13px;
+  border-left: 3px solid #c084fc;
+  margin-bottom: 14px;
+}
+
+.attr-grid {
+  display: grid;
+  grid-template-columns: repeat(4,1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.attr {
+  background: var(--paper2);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+
+.attr-k { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--ink3); text-transform: uppercase; letter-spacing: .08em; margin-bottom: 2px; }
+.attr-v { font-size: 12px; color: var(--ink); font-weight: 500; }
+
+.r-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.btn-log {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 7px;
+  border: 1px solid var(--green);
+  background: var(--green-bg);
+  color: var(--green);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-log:hover { background: #b8dfc2; }
+
+.btn-sec {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 7px;
+  border: 1px solid var(--line);
+  background: var(--paper);
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-sec:hover { background: var(--paper2); }
+
+/* ── Registry ────────────────────────────── */
+.reg-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.reg-table th {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  color: var(--ink3);
+  padding: 8px 14px;
+  text-align: left;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper2);
+}
+
+.reg-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  color: var(--ink);
+  vertical-align: middle;
+}
+
+.reg-table tr:last-child td { border-bottom: none; }
+.reg-table tbody tr { transition: background 0.12s; }
+.reg-table tbody tr:hover td { background: var(--paper2); }
+
+.reg-id {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink3);
+}
+
+.reg-empty {
+  padding: 40px;
+  text-align: center;
+  color: var(--ink3);
+  font-size: 13px;
+}
+
+.reg-empty-icon { font-size: 32px; margin-bottom: 8px; }
+
+/* ── About section ───────────────────────── */
+.about {
+  margin-top: 40px;
+  padding: 40px 0;
+  border-top: 1px solid var(--line);
+}
+
+.about-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 24px;
+}
+
+.about-grid {
+  display: grid;
+  grid-template-columns: repeat(3,1fr);
+  gap: 14px;
+}
+
+.about-card {
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+}
+
+.about-card-icon {
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.about-card-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+
+.about-card-desc {
+  font-size: 12px;
+  color: var(--ink2);
+  line-height: 1.65;
+}
+
+.flow-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 28px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.flow-step {
+  background: var(--paper2);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink2);
+  text-align: center;
+}
+
+.flow-arrow {
+  color: var(--ink3);
+  font-size: 14px;
+}
+
+/* ── Footer ──────────────────────────────── */
+footer {
+  background: var(--ink);
+  padding: 24px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 40px;
+}
+
+.footer-logo {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  color: rgba(245,242,237,0.7);
+}
+
+.footer-logo span { color: var(--accent); }
+
+.footer-text {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: rgba(245,242,237,0.3);
+}
+
+/* ── Responsive ──────────────────────────── */
+@media (max-width: 768px) {
+  .main { padding: 20px 16px; }
+  .sim-grid { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+  .attr-grid { grid-template-columns: repeat(2,1fr); }
+  .about-grid { grid-template-columns: 1fr; }
+  .hero { padding: 40px 16px 32px; }
+  header { padding: 0 16px; }
+}
+
+@media (max-width: 480px) {
+  .stats-row { grid-template-columns: repeat(2,1fr); }
+  .hero-title { font-size: 28px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<header>
+  <div class="logo">Lost<span>&</span>Found <span style="font-weight:400;font-size:13px;color:rgba(245,242,237,0.4)">· Campus IoT</span></div>
+  <div class="header-right">
+    <div class="status-pill">
+      <div class="dot"></div>
+      PICO-CAM-01 · Online
+    </div>
+    <a href="#registry" class="header-btn">Registry</a>
+    <a href="#about" class="header-btn">About</a>
+  </div>
+</header>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">Raspberry Pi Pico W · OV2640 · Claude Vision AI</div>
+    <h1 class="hero-title">Campus Lost <em>&</em> Found<br>Digitisation System</h1>
+    <p class="hero-desc">An IoT pipeline that automatically identifies lost objects using a Pico W camera module and Claude Vision AI, then logs them into a searchable campus registry.</p>
+    <div class="hero-chips">
+      <div class="chip">MicroPython 1.23</div>
+      <div class="chip">OV2640 · 1600×1200</div>
+      <div class="chip">Claude Vision API</div>
+      <div class="chip">FastAPI Backend</div>
+      <div class="chip">Campus WiFi · 192.168.4.x</div>
+    </div>
+  </div>
+</section>
+
+<!-- Main -->
+<main class="main">
+
+  <!-- Stats -->
+  <div class="stats-row">
+    <div class="stat s1">
+      <div class="stat-lbl">Total Scanned</div>
+      <div class="stat-val" id="st-total">0</div>
+    </div>
+    <div class="stat s2">
+      <div class="stat-lbl">Unclaimed</div>
+      <div class="stat-val" id="st-unclaimed">0</div>
+    </div>
+    <div class="stat s3">
+      <div class="stat-lbl">Critical</div>
+      <div class="stat-val" id="st-critical">0</div>
+    </div>
+    <div class="stat s4">
+      <div class="stat-lbl">Avg Confidence</div>
+      <div class="stat-val" id="st-conf">—</div>
+    </div>
+  </div>
+
+  <!-- Simulator -->
+  <div class="sim-grid">
+
+    <!-- Hardware -->
+    <div class="panel">
+      <div class="ph">
+        <span class="ph-title">Hardware Simulator</span>
+        <span class="badge b-green" id="hwBadge">Online</span>
+      </div>
+      <div class="hw-body">
+
+        <div class="pico-board">
+          <div class="pico-top">
+            <span class="pico-lbl">RASPBERRY PI PICO W</span>
+            <span class="pico-chip">RP2040 · CYW43439</span>
+          </div>
+          <div class="pico-leds">
+            <div class="hw-led" id="ledOnboard" title="Onboard LED (GP25)"></div>
+            <div class="hw-led" id="ledRed"     title="URGENT — GP14"></div>
+            <div class="hw-led" id="ledGreen"   title="OK — GP13"></div>
+          </div>
+          <div class="pico-pins">
+            <div class="pin-strip" id="pinsL"></div>
+            <div class="pin-strip" id="pinsR"></div>
+          </div>
+        </div>
+
+        <div class="ov2640">
+          <div class="lens-wrap">
+            <div class="lens-mid">
+              <div class="lens-iris" id="camIris"></div>
+            </div>
+          </div>
+          <div class="lens-info">
+            <div class="lens-name">OV2640 Camera Module</div>
+            <div class="lens-spec">SPI FIFO · I2C SCCB · 20MHz XCLK</div>
+            <div class="lens-state" id="camState">Ready</div>
+          </div>
+        </div>
+
+        <select class="obj-select" id="objSelect">
+          <option value="">— Place object in front of camera —</option>
+          <option value="phone">📱  Smartphone</option>
+          <option value="wallet">👜  Leather Wallet</option>
+          <option value="keys">🔑  Key Bundle</option>
+          <option value="laptop">💻  Laptop Computer</option>
+          <option value="bottle">🍶  Water Bottle</option>
+          <option value="bag">🎒  Backpack</option>
+          <option value="umbrella">☂️  Umbrella</option>
+          <option value="id">🪪  Student ID Card</option>
+          <option value="glasses">👓  Eyeglasses</option>
+          <option value="earbuds">🎧  Wireless Earbuds</option>
+          <option value="charger">🔌  Phone Charger</option>
+          <option value="notebook">📓  Notebook</option>
+        </select>
+
+        <button class="scan-btn" id="scanBtn" onclick="startScan()">
+          <div class="btn-indicator" id="btnInd"></div>
+          Press Trigger Button · GP15
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Serial Monitor -->
+    <div class="panel">
+      <div class="ph">
+        <span class="ph-title">Serial Monitor · MicroPython REPL</span>
+        <span id="runBadge" class="badge b-gray">idle</span>
+      </div>
+      <div class="serial" id="serial"></div>
+    </div>
+
+  </div>
+
+  <!-- Detection Result -->
+  <div class="panel" style="margin-bottom:20px">
+    <div class="ph">
+      <span class="ph-title">Detection Result</span>
+      <span class="badge b-gray" id="resBadge">Awaiting scan</span>
+    </div>
+    <div class="result-panel" id="resultPanel">
+      <div class="result-top">
+        <div class="r-emoji" id="rEmoji"></div>
+        <div style="flex:1">
+          <div class="r-name" id="rName"></div>
+          <div class="r-cat"  id="rCat"></div>
+          <div class="conf-wrap">
+            <div class="conf-track"><div class="conf-bar" id="confBar"></div></div>
+            <div class="conf-num"  id="confNum">0%</div>
+          </div>
+        </div>
+      </div>
+      <div class="r-desc" id="rDesc"></div>
+      <div class="attr-grid" id="rAttrs"></div>
+      <div class="r-actions">
+        <button class="btn-log" onclick="logItem()">+ Log to Registry</button>
+        <button class="btn-sec" onclick="resetScan()">Clear</button>
+      </div>
+    </div>
+    <div id="noResult" style="padding:32px;text-align:center;color:var(--ink3);font-size:13px">
+      Select an object and press the scan button above to begin.
+    </div>
+  </div>
+
+  <!-- Registry -->
+  <div class="panel" id="registry">
+    <div class="ph">
+      <span class="ph-title">Lost &amp; Found Registry</span>
+      <span class="badge b-amber" id="regBadge">0 items</span>
+    </div>
+    <div id="regBody">
+      <div class="reg-empty">
+        <div class="reg-empty-icon">📋</div>
+        No items logged yet. Scan an object and click "Log to Registry".
+      </div>
+    </div>
+  </div>
+
+  <!-- About -->
+  <section class="about" id="about">
+    <div class="about-title">How This System Works</div>
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="about-card-icon">🔌</div>
+        <div class="about-card-title">Hardware Layer</div>
+        <div class="about-card-desc">A Raspberry Pi Pico W runs MicroPython firmware. When the trigger button is pressed, the OV2640 camera captures a JPEG frame via SPI FIFO after VSYNC pulse. The onboard LED and buzzer give instant tactile feedback.</div>
+      </div>
+      <div class="about-card">
+        <div class="about-card-icon">☁️</div>
+        <div class="about-card-title">AI Identification</div>
+        <div class="about-card-desc">The JPEG is base64-encoded and uploaded to a FastAPI backend over campus WiFi. The backend calls Claude Vision API with a structured prompt that extracts object name, category, priority level, and a description useful for lost & found staff.</div>
+      </div>
+      <div class="about-card">
+        <div class="about-card-icon">📋</div>
+        <div class="about-card-title">Campus Registry</div>
+        <div class="about-card-desc">Every identified item is stored in SQLite with a unique LF-XXXX ID, timestamp, location, and image path. Staff can search, filter by priority, and mark items as claimed. Critical items like laptops and student IDs trigger urgent alerts.</div>
+      </div>
+    </div>
+
+    <div class="flow-row">
+      <div class="flow-step">OV2640 Camera</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Pico W · SPI FIFO</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">WiFi · HTTP POST</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">FastAPI Backend</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Claude Vision API</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">SQLite Registry</div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">Staff Dashboard</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="footer-logo">Lost<span>&</span>Found · Campus IoT System</div>
+  <div class="footer-text">Raspberry Pi Pico W · OV2640 · MicroPython · Claude Vision API · FastAPI</div>
+</footer>
+
+<script>
+const OBJECTS = {
+  phone:    {emoji:'📱',name:'Smartphone',      cat:'Electronics · Personal Device',    conf:98.2,priority:'High',    color:'Black',  cond:'Good',      loc:'Library Entrance',  desc:'Modern touchscreen phone with glass back. Screen intact. Contains personal data — store in secure cabinet and log device if possible.'},
+  wallet:   {emoji:'👜',name:'Leather Wallet',  cat:'Personal Accessory · Financial',   conf:96.4,priority:'Critical',color:'Brown',  cond:'Used',      loc:'Cafeteria',         desc:'Dark brown bifold wallet. May contain cash, cards, or ID. Do not open contents — log immediately and store in secure cabinet.'},
+  keys:     {emoji:'🔑',name:'Key Bundle',      cat:'Access · Security',               conf:91.7,priority:'High',    color:'Silver', cond:'Good',      loc:'Sports Complex',    desc:'Set of 3-5 keys on metal ring. Check for room number tags. Owner likely cannot access their accommodation — treat as urgent.'},
+  laptop:   {emoji:'💻',name:'Laptop Computer', cat:'Electronics · High Value',         conf:97.8,priority:'Critical',color:'Silver', cond:'Good',      loc:'Library Entrance',  desc:'Thin laptop approx 13-15 inch. Critical item — lock in secure storage immediately. Note any serial number stickers visible.'},
+  bottle:   {emoji:'🍶',name:'Water Bottle',    cat:'Drinkware · Personal',             conf:89.1,priority:'Low',    color:'Grey',   cond:'Good',      loc:'Gym Entrance',      desc:'Insulated stainless steel bottle with stickers. Low urgency. Check for name or initials. Standard 30-day holding period applies.'},
+  bag:      {emoji:'🎒',name:'Backpack',        cat:'Luggage · Student Item',           conf:95.1,priority:'Medium', color:'Navy',   cond:'Good',      loc:'Main Gate',         desc:'Medium navy student backpack with multiple pockets. May contain valuables. Check for external ID tag before opening.'},
+  umbrella: {emoji:'☂️',name:'Umbrella',        cat:'Weather Gear',                     conf:84.3,priority:'Low',    color:'Black',  cond:'Good',      loc:'Library Entrance',  desc:'Compact folding black umbrella with rubber handle. Very common lost item. Note any distinguishing features for owner identification.'},
+  id:       {emoji:'🪪',name:'Student ID Card', cat:'Identity Document · Urgent',       conf:99.1,priority:'Critical',color:'White',  cond:'Excellent', loc:'Lecture Hall B',    desc:'Campus student ID card detected. Contains name, photo, and roll number. Highest priority — contact Student Records to notify owner directly.'},
+  glasses:  {emoji:'👓',name:'Eyeglasses',      cat:'Optical · Personal',               conf:88.6,priority:'High',   color:'Gold',   cond:'Good',      loc:'Cafeteria',         desc:'Prescription glasses, thin gold frame, no case present. Owner likely cannot function normally without these. Mark as high urgency.'},
+  earbuds:  {emoji:'🎧',name:'Wireless Earbuds',cat:'Electronics · Audio',              conf:93.4,priority:'High',   color:'White',  cond:'Excellent', loc:'Library Entrance',  desc:'TWS earbuds in white charging case. High value small item. Seal in a labelled plastic bag and log brand if visible on case.'},
+  charger:  {emoji:'🔌',name:'Phone Charger',   cat:'Electronics · Accessory',          conf:82.9,priority:'Medium', color:'White',  cond:'Good',      loc:'Lecture Hall A',    desc:'USB-C cable and/or charging brick. Note cable type and length. Moderate recovery rate. Store with standard items.'},
+  notebook: {emoji:'📓',name:'Notebook',        cat:'Stationery · Academic',            conf:90.2,priority:'Medium', color:'Blue',   cond:'Used',      loc:'Library Entrance',  desc:'Spiral-bound notebook, partially used. May contain important lecture notes or personal info. Check cover only for owner name.'},
+};
+
+let registry = [];
+let idCounter = 1;
+let scanCount = 0;
+let totalConf = 0;
+let scanning = false;
+let current = null;
+let startMs = Date.now();
+
+// Build pin strips
+for(let i=0;i<10;i++){
+  ['pinsL','pinsR'].forEach(id=>{
+    const p=document.createElement('div');
+    p.className='pin';
+    document.getElementById(id).appendChild(p);
+  });
+}
+
+function ts(){
+  const s=Math.floor((Date.now()-startMs)/1000);
+  return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0');
+}
+
+function log(msg,type='info'){
+  const s=document.getElementById('serial');
+  const d=document.createElement('div');
+  d.className='log-row';
+  const cmap={info:'c-info',warn:'c-warn',err:'c-err',data:'c-data',ai:'c-ai',sys:'c-sys'};
+  d.innerHTML=`<span class="log-ts">[${ts()}]</span><span class="${cmap[type]||'c-info'}">${msg}</span>`;
+  s.appendChild(d);
+  s.scrollTop=s.scrollHeight;
+}
+
+function setLed(id,cls){
+  const el=document.getElementById(id);
+  el.className='hw-led '+(cls||'');
+}
+
+function blinkLed(id,color,n,ms){
+  let c=0;
+  const iv=setInterval(()=>{
+    setLed(id,c%2===0?'on-'+(color==='green'?'g':color==='red'?'r':'o'):'');
+    if(++c>=n*2){clearInterval(iv);setLed(id,'');}
+  },ms);
+}
+
+function updateStats(){
+  const total=registry.length;
+  const unc=registry.filter(r=>r.status==='unclaimed').length;
+  const crit=registry.filter(r=>r.obj.priority==='Critical'&&r.status==='unclaimed').length;
+  document.getElementById('st-total').textContent=scanCount;
+  document.getElementById('st-unclaimed').textContent=unc;
+  document.getElementById('st-critical').textContent=crit;
+  document.getElementById('st-conf').textContent=scanCount>0?(totalConf/scanCount).toFixed(1)+'%':'—';
+}
+
+// Boot sequence
+setTimeout(()=>{
+  log('╔══════════════════════════════════════╗','sys');
+  log('║  Campus Lost & Found · Pico W v1.0   ║','sys');
+  log('╚══════════════════════════════════════╝','sys');
+},100);
+setTimeout(()=>{setLed('ledOnboard','on-g');log('System boot complete · MicroPython 1.23','info');},400);
+setTimeout(()=>log('OV2640 init OK · SCCB handshake · chip ID 0x26','info'),700);
+setTimeout(()=>{log('WiFi connecting · SSID: Campus-IoT','warn');document.getElementById('runBadge').textContent='connecting';document.getElementById('runBadge').className='badge b-amber';},1000);
+setTimeout(()=>{
+  log('WiFi connected · IP: 192.168.4.112 · RSSI: -58 dBm','info');
+  log('Claude Vision API · authenticated · model: claude-opus-4-5','ai');
+  log('Awaiting trigger button press on GP15...','info');
+  setLed('ledOnboard','');
+  document.getElementById('runBadge').textContent='ready';
+  document.getElementById('runBadge').className='badge b-green';
+},2200);
+
+function startScan(){
+  if(scanning)return;
+  const key=document.getElementById('objSelect').value;
+  if(!key){log('ERROR: no object selected','err');return;}
+
+  scanning=true;
+  current=OBJECTS[key];
+  document.getElementById('scanBtn').disabled=true;
+  document.getElementById('btnInd').className='btn-indicator scanning';
+  document.getElementById('hwBadge').textContent='Scanning';
+  document.getElementById('hwBadge').className='badge b-amber';
+  document.getElementById('runBadge').textContent='running';
+  document.getElementById('runBadge').className='badge b-amber';
+  document.getElementById('resultPanel').classList.remove('show');
+  document.getElementById('noResult').style.display='none';
+
+  log('','info');
+  log('TRIGGER: GP15 falling edge detected','info');
+  setLed('ledOnboard','on-o');
+
+  setTimeout(()=>{
+    log('CAM: frame capture initiated · 320×240 JPEG','info');
+    document.getElementById('camIris').classList.add('cap');
+    document.getElementById('camState').textContent='Capturing...';
+  },300);
+
+  setTimeout(()=>{
+    log('CAM: VSYNC received · FIFO length: 43762 bytes','data');
+    log('CAM: JPEG validated · FF D8 FF E0 header OK','data');
+  },850);
+
+  setTimeout(()=>{
+    log('API: base64 encoding · 58349 chars','data');
+    log('API: POST → backend.campus.edu/lost-found/scan','ai');
+  },1300);
+
+  setTimeout(()=>{
+    log('API: HTTP 200 OK · round-trip 1.4s','info');
+    log('VISION: Claude claude-opus-4-5 · analysing frame...','ai');
+  },1900);
+
+  setTimeout(()=>{
+    const o=current;
+    document.getElementById('camIris').classList.remove('cap');
+    document.getElementById('camState').textContent='Ready';
+    setLed('ledOnboard','');
+    log(`VISION: object="${o.name}"  conf=${o.conf}%  priority=${o.priority}`,'ai');
+    log(`VISION: category="${o.cat}"  color=${o.color}  cond=${o.cond}`,'ai');
+    if(['Critical','High'].includes(o.priority)){
+      blinkLed('ledRed','red',4,140);
+      log('LED: RED blink · urgent item detected','warn');
+    } else {
+      blinkLed('ledGreen','green',2,150);
+      log('LED: GREEN blink · item logged','info');
+    }
+    log('SCAN: pipeline complete · result ready','info');
+    scanCount++;
+    totalConf+=o.conf;
+    updateStats();
+    showResult();
+    scanning=false;
+    document.getElementById('scanBtn').disabled=false;
+    document.getElementById('btnInd').className='btn-indicator';
+    document.getElementById('hwBadge').textContent='Online';
+    document.getElementById('hwBadge').className='badge b-green';
+    document.getElementById('runBadge').textContent='ready';
+    document.getElementById('runBadge').className='badge b-green';
+  },2700);
+}
+
+function showResult(){
+  const o=current;
+  document.getElementById('rEmoji').textContent=o.emoji;
+  document.getElementById('rName').textContent=o.name;
+  document.getElementById('rCat').textContent=o.cat;
+  document.getElementById('rDesc').textContent=o.desc;
+
+  const pmap={Critical:'b-red',High:'b-amber',Medium:'b-blue',Low:'b-gray'};
+  document.getElementById('resBadge').textContent=o.priority;
+  document.getElementById('resBadge').className='badge '+(pmap[o.priority]||'b-gray');
+
+  setTimeout(()=>{
+    document.getElementById('confBar').style.width=o.conf+'%';
+    document.getElementById('confNum').textContent=o.conf.toFixed(1)+'%';
+  },100);
+
+  document.getElementById('rAttrs').innerHTML=[
+    ['Color',o.color],['Condition',o.cond],['Priority',o.priority],['Location',o.loc]
+  ].map(([k,v])=>`<div class="attr"><div class="attr-k">${k}</div><div class="attr-v">${v}</div></div>`).join('');
+
+  document.getElementById('resultPanel').classList.add('show');
+}
+
+function logItem(){
+  if(!current)return;
+  const id='LF-'+String(idCounter++).padStart(4,'0');
+  const now=new Date();
+  registry.unshift({
+    id,obj:current,
+    time:now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
+    date:now.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}),
+    status:'unclaimed'
+  });
+  renderRegistry();
+  updateStats();
+  log(`REGISTRY: item logged · ID: ${id} · status=unclaimed`,'info');
+  document.getElementById('resBadge').textContent='Logged ✓';
+  document.getElementById('resBadge').className='badge b-green';
+  document.getElementById('registry').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function renderRegistry(){
+  const c=registry.length;
+  document.getElementById('regBadge').textContent=c+(c===1?' item':' items');
+  if(c===0){
+    document.getElementById('regBody').innerHTML='<div class="reg-empty"><div class="reg-empty-icon">📋</div>No items logged yet.</div>';
+    return;
+  }
+  const rows=registry.map(r=>{
+    const pmap={Critical:'b-red',High:'b-amber',Medium:'b-blue',Low:'b-gray'};
+    return `<tr>
+      <td>${r.obj.emoji} <strong>${r.obj.name}</strong></td>
+      <td class="reg-id">${r.id}</td>
+      <td><span class="badge ${pmap[r.obj.priority]||'b-gray'}">${r.obj.priority}</span></td>
+      <td style="color:var(--ink2);font-size:12px">${r.obj.loc}</td>
+      <td style="color:var(--ink3);font-size:11px;font-family:'JetBrains Mono',monospace">${r.date} · ${r.time}</td>
+      <td><span class="badge b-amber">Unclaimed</span></td>
+    </tr>`;
+  }).join('');
+  document.getElementById('regBody').innerHTML=`
+    <table class="reg-table">
+      <thead><tr><th>Object</th><th>ID</th><th>Priority</th><th>Location</th><th>Logged</th><th>Status</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function resetScan(){
+  document.getElementById('resultPanel').classList.remove('show');
+  document.getElementById('noResult').style.display='block';
+  document.getElementById('resBadge').textContent='Awaiting scan';
+  document.getElementById('resBadge').className='badge b-gray';
+  document.getElementById('confBar').style.width='0';
+  current=null;
+}
+</script>
+</body>
+</html>
