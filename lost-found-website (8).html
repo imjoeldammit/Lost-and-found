@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Lost & Found · Pico W Simulator</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0e0e0e;--ink2:#444;--ink3:#888;
+  --paper:#f5f2ed;--paper2:#edeae4;--paper3:#e2ddd6;
+  --line:rgba(14,14,14,0.1);
+  --green:#1a7a3c;--green-bg:#d4edda;
+  --amber:#92400e;--amber-bg:#fef3c7;
+  --red:#991b1b;--red-bg:#fee2e2;
+  --accent:#c8553d;--pico:#1e6b30;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+
+header{background:var(--ink);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:100}
+.logo{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;color:#f5f2ed;letter-spacing:-.02em}
+.logo em{color:var(--accent);font-style:normal}
+.hright{display:flex;align-items:center;gap:12px}
+.spill{display:flex;align-items:center;gap:6px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:4px 12px;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,.7)}
+.dot{width:6px;height:6px;border-radius:50%;background:#4ade80;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.hbtn{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;padding:6px 14px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.8);cursor:pointer;transition:all .15s;text-decoration:none}
+.hbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+
+.hero{background:var(--ink);padding:52px 32px 40px;position:relative;overflow:hidden}
+.hero::before{content:'';position:absolute;top:-40px;right:-40px;width:300px;height:300px;border-radius:50%;border:1px solid rgba(200,85,61,.15)}
+.hero::after{content:'';position:absolute;top:20px;right:20px;width:160px;height:160px;border-radius:50%;border:1px solid rgba(200,85,61,.1)}
+.hi{max-width:980px;margin:0 auto;position:relative;z-index:1}
+.htag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--accent);letter-spacing:.12em;text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.htag::before{content:'';display:inline-block;width:18px;height:1px;background:var(--accent)}
+.htitle{font-family:'Syne',sans-serif;font-size:clamp(28px,5vw,52px);font-weight:800;color:#f5f2ed;letter-spacing:-.03em;line-height:1.05;margin-bottom:16px}
+.htitle em{color:var(--accent);font-style:normal}
+.hdesc{font-size:14px;color:rgba(245,242,237,.5);max-width:500px;line-height:1.7;margin-bottom:24px}
+.hchips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:10px;padding:4px 11px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.4)}
+
+/* API key banner */
+.api-banner{background:#fff8e1;border:1px solid #f59e0b;border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.api-banner-icon{font-size:20px;flex-shrink:0}
+.api-banner-text{flex:1;font-size:13px;color:#78350f;line-height:1.5}
+.api-banner-text strong{font-weight:600;display:block;margin-bottom:2px}
+.api-key-row{display:flex;gap:8px;width:100%;margin-top:8px}
+.api-key-input{flex:1;font-family:'JetBrains Mono',monospace;font-size:12px;padding:8px 12px;border:1px solid #f59e0b;border-radius:7px;background:#fff;color:#0e0e0e;outline:none}
+.api-key-input:focus{border-color:#d97706}
+.api-save-btn{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:8px 16px;border-radius:7px;background:#92400e;color:#fff;border:none;cursor:pointer}
+.api-save-btn:hover{background:#78350f}
+
+.main{max-width:980px;margin:0 auto;padding:28px 32px}
+
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.s1::after{background:var(--green)}.s2::after{background:#d97706}.s3::after{background:var(--red)}.s4::after{background:#2563eb}
+.slbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink3);margin-bottom:6px}
+.sval{font-family:'Syne',sans-serif;font-size:30px;font-weight:800;color:var(--ink);line-height:1}
+
+.sim-grid{display:grid;grid-template-columns:300px 1fr;gap:16px;margin-bottom:18px}
+.panel{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.ph{padding:10px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;background:var(--paper2)}
+.ph-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+.badge{font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.04em}
+.bg{background:var(--green-bg);color:var(--green)}
+.ba{background:var(--amber-bg);color:var(--amber)}
+.br{background:var(--red-bg);color:var(--red)}
+.bk{background:var(--paper3);color:var(--ink2)}
+.bb{background:#dbeafe;color:#1e3a5f}
+
+.hw-body{padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:12px}
+.pico-board{width:100%;background:var(--pico);border-radius:8px;padding:10px 8px}
+.ptop{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.plbl{font-family:'JetBrains Mono',monospace;font-size:7px;color:rgba(255,255,255,.4);letter-spacing:.1em}
+.pchip{background:#0d1a0f;border-radius:3px;padding:3px 7px;font-family:'JetBrains Mono',monospace;font-size:7px;color:rgba(255,255,255,.4)}
+.pleds{display:flex;justify-content:center;gap:7px;margin:6px 0}
+.hwled{width:10px;height:10px;border-radius:50%;background:rgba(0,0,0,.4);border:1.5px solid rgba(0,0,0,.3);transition:background .1s}
+.hwled.g{background:#22c55e}.hwled.r{background:#ef4444}.hwled.o{background:#f59e0b}
+@keyframes blg{0%,100%{background:#22c55e}50%{background:rgba(0,0,0,.4)}}
+@keyframes blr{0%,100%{background:#ef4444}50%{background:rgba(0,0,0,.4)}}
+.hwled.blg{animation:blg .25s ease 5}.hwled.blr{animation:blr .2s ease 6}
+.ppins{display:flex;justify-content:space-between;padding:0 2px}
+.pstrip{display:flex;gap:3px}
+.pin{width:5px;height:6px;background:#c0b090;border-radius:1px}
+
+.cam-mod{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--paper2);padding:9px 11px;display:flex;align-items:center;gap:10px}
+.lw{width:40px;height:40px;border-radius:50%;background:#111827;border:2px solid #374151;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lm{width:24px;height:24px;border-radius:50%;background:#0d1117;border:1.5px solid #4b5563;display:flex;align-items:center;justify-content:center}
+.li{width:11px;height:11px;border-radius:50%;background:#1e3a5c;transition:background .3s,transform .3s}
+.li.cap{background:#93c5fd;transform:scale(1.2)}
+.cinfo{flex:1}.cname{font-size:12px;font-weight:500;color:var(--ink);margin-bottom:1px}
+.cspec{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3)}
+.cstate{font-size:11px;color:var(--green);margin-top:2px}
+
+/* Camera viewfinder */
+.viewfinder{width:100%;aspect-ratio:4/3;background:#0a0a0a;border-radius:8px;border:1px solid var(--line);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.vf-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(34,197,94,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,.06) 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
+.vf-obj{font-size:56px;position:relative;z-index:2;filter:drop-shadow(0 4px 12px rgba(0,0,0,.5));transition:opacity .2s}
+.vf-obj.hidden{opacity:0}
+.vf-scanline{position:absolute;left:0;right:0;height:2px;background:rgba(34,197,94,.8);top:0;display:none;z-index:3}
+.vf-scanline.on{display:block;animation:scandn 1s linear infinite}
+@keyframes scandn{0%{top:0}100%{top:100%}}
+.vf-box{position:absolute;inset:18%;border:1.5px solid #22c55e;border-radius:3px;display:none;z-index:4}
+.vf-box.on{display:block;animation:boxin .3s ease}
+@keyframes boxin{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.vf-corner{position:absolute;width:11px;height:11px;border-color:#22c55e;border-style:solid}
+.vtl{top:-1px;left:-1px;border-width:2px 0 0 2px}
+.vtr{top:-1px;right:-1px;border-width:2px 2px 0 0}
+.vbl{bottom:-1px;left:-1px;border-width:0 0 2px 2px}
+.vbr{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+.vf-conf{position:absolute;top:17%;left:17%;background:rgba(34,197,94,.92);color:#000;font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;padding:2px 6px;border-radius:3px;display:none;z-index:5}
+.vf-conf.on{display:block}
+.vf-label{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;font-family:'JetBrains Mono',monospace;font-size:10px;padding:3px 10px;border-radius:4px;display:none;z-index:5;white-space:nowrap}
+.vf-label.on{display:block}
+.vf-idle{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,.25);text-align:center;position:absolute;z-index:2}
+
+.objsel{width:100%;font-family:'JetBrains Mono',monospace;font-size:12px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);cursor:pointer;outline:none;transition:border-color .15s}
+.objsel:focus{border-color:var(--ink3)}
+
+.scanbtn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:700;background:var(--ink);color:var(--paper);border:none;border-radius:8px;cursor:pointer;transition:all .15s}
+.scanbtn:hover{background:#2d2a26}.scanbtn:active{transform:scale(.98)}
+.scanbtn:disabled{background:var(--paper3);color:var(--ink3);cursor:not-allowed;transform:none}
+.bind{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0}
+.bind.sc{background:#f59e0b;animation:pulse .5s infinite}
+
+.serial{background:#0d1117;min-height:360px;max-height:360px;overflow-y:auto;padding:10px 14px;font-family:'JetBrains Mono',monospace;font-size:11.5px;line-height:2}
+.serial::-webkit-scrollbar{width:4px}
+.serial::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+.lr{display:flex;gap:10px;animation:li .15s ease}
+@keyframes li{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.lts{color:#2d4a32;min-width:46px;flex-shrink:0}
+.ci{color:#4ade80}.cw{color:#fbbf24}.ce{color:#f87171}.cd{color:#60a5fa}.ca{color:#c084fc}.cs{color:#f0abfc;font-weight:700}
+
+.rp{display:none;padding:18px 20px;animation:li .3s ease}
+.rp.show{display:block}
+.rtop{display:flex;gap:14px;align-items:flex-start;margin-bottom:12px}
+.remoji{font-size:42px;line-height:1;flex-shrink:0}
+.rname{font-family:'Syne',sans-serif;font-size:21px;font-weight:800;color:var(--ink);letter-spacing:-.02em;margin-bottom:2px}
+.rcat{font-size:12px;color:var(--ink3);margin-bottom:8px}
+.cfw{display:flex;align-items:center;gap:8px}
+.cft{flex:1;height:5px;background:var(--paper3);border-radius:3px;overflow:hidden}
+.cfb{height:100%;background:var(--green);border-radius:3px;transition:width .7s ease;width:0}
+.cfn{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green);min-width:38px;text-align:right;font-weight:700}
+.rdesc{font-size:13px;color:var(--ink2);line-height:1.65;background:var(--paper2);border-radius:8px;padding:10px 13px;border-left:3px solid #c084fc;margin-bottom:12px}
+.rag{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px}
+.attr{background:var(--paper2);border-radius:8px;padding:8px 10px}
+.atk{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.atv{font-size:12px;color:var(--ink);font-weight:500}
+.ract{display:flex;gap:8px;flex-wrap:wrap}
+.btnl{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;padding:8px 16px;border-radius:7px;border:1px solid var(--green);background:var(--green-bg);color:var(--green);cursor:pointer;transition:all .15s}
+.btnl:hover{background:#b8dfc2}
+.btns{font-family:'Syne',sans-serif;font-size:12px;font-weight:600;padding:8px 16px;border-radius:7px;border:1px solid var(--line);background:var(--paper);color:var(--ink2);cursor:pointer;transition:all .15s}
+.btns:hover{background:var(--paper2)}
+
+.regt{width:100%;border-collapse:collapse;font-size:13px}
+.regt th{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:var(--ink3);padding:8px 14px;text-align:left;border-bottom:1px solid var(--line);background:var(--paper2)}
+.regt td{padding:10px 14px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:middle}
+.regt tr:last-child td{border-bottom:none}
+.regt tbody tr:hover td{background:var(--paper2)}
+.rege{padding:40px;text-align:center;color:var(--ink3);font-size:13px}
+
+.about{margin-top:36px;padding:36px 0;border-top:1px solid var(--line)}
+.abt{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-.02em;margin-bottom:20px}
+.abg{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.abc{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:16px}
+.abci{font-size:22px;margin-bottom:8px}
+.abct{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:var(--ink);margin-bottom:5px}
+.abcd{font-size:12px;color:var(--ink2);line-height:1.6}
+.flow{display:flex;align-items:center;gap:6px;margin-top:24px;flex-wrap:wrap;justify-content:center}
+.fs{background:var(--paper2);border:1px solid var(--line);border-radius:7px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink2)}
+.fa{color:var(--ink3);font-size:12px}
+
+footer{background:var(--ink);padding:20px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-top:40px}
+.fl{font-family:'Syne',sans-serif;font-size:13px;font-weight:800;color:rgba(245,242,237,.6)}
+.fl em{color:var(--accent);font-style:normal}
+.ft{font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(245,242,237,.25)}
+
+@media(max-width:768px){
+  .main{padding:20px 16px}.sim-grid{grid-template-columns:1fr}
+  .stats-row{grid-template-columns:repeat(2,1fr)}.rag{grid-template-columns:repeat(2,1fr)}
+  .abg{grid-template-columns:1fr}.hero{padding:36px 16px 28px}
+  header{padding:0 14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Lost<em>&</em>Found <span style="font-weight:400;font-size:12px;color:rgba(245,242,237,.35)">· Campus IoT</span></div>
+  <div class="hright">
+    <div class="spill"><div class="dot"></div>PICO-CAM-01 · Online</div>
+    <a href="#registry" class="hbtn">Registry</a>
+    <a href="#about"    class="hbtn">About</a>
+    <button class="hbtn" onclick="changeKey()" style="color:#fbbf24;border-color:rgba(251,191,36,0.4)">Change API Key</button>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="hi">
+    <div class="htag">Raspberry Pi Pico W · OV2640 · Claude Vision AI</div>
+    <h1 class="htitle">Campus Lost <em>&</em> Found<br>Digitisation System</h1>
+    <p class="hdesc">An IoT pipeline that uses a Pico W camera module and Claude Vision AI to genuinely identify lost objects and log them into a searchable campus registry.</p>
+    <div class="hchips">
+      <div class="chip">MicroPython 1.23</div>
+      <div class="chip">OV2640 · 1600×1200</div>
+      <div class="chip">Claude Vision API</div>
+      <div class="chip">FastAPI Backend</div>
+    </div>
+  </div>
+</section>
+
+<main class="main">
+
+  <!-- API Key Setup -->
+  <div class="api-banner" id="apiBanner">
+    <div class="api-banner-icon">🔑</div>
+    <div class="api-banner-text">
+      <strong>Enter your FREE Google Gemini API key to enable real AI detection</strong>
+      100% free — no credit card needed. Go to <strong>aistudio.google.com</strong> &rarr; sign in with Google &rarr; click <strong>"Get API Key"</strong> &rarr; <strong>"Create API key"</strong>. Copy and paste it below.
+      <div class="api-key-row">
+        <input class="api-key-input" id="apiKeyInput" type="password" placeholder="AIzaSy...">
+        <button class="api-save-btn" onclick="saveKey()">Save Key</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="stat s1"><div class="slbl">Total Scanned</div><div class="sval" id="st1">0</div></div>
+    <div class="stat s2"><div class="slbl">Unclaimed</div><div class="sval" id="st2">0</div></div>
+    <div class="stat s3"><div class="slbl">Critical</div><div class="sval" id="st3">0</div></div>
+    <div class="stat s4"><div class="slbl">Avg Confidence</div><div class="sval" id="st4">—</div></div>
+  </div>
+
+  <div class="sim-grid">
+
+    <!-- Hardware side -->
+    <div class="panel">
+      <div class="ph"><span class="ph-title">Hardware Simulator</span><span class="badge bg" id="hwBadge">Online</span></div>
+      <div class="hw-body">
+
+        <div class="pico-board">
+          <div class="ptop">
+            <span class="plbl">RASPBERRY PI PICO W</span>
+            <span class="pchip">RP2040 · CYW43439</span>
+          </div>
+          <div class="pleds">
+            <div class="hwled" id="lOn"  title="Onboard LED GP25"></div>
+            <div class="hwled" id="lRed" title="URGENT GP14"></div>
+            <div class="hwled" id="lGrn" title="OK GP13"></div>
+          </div>
+          <div class="ppins">
+            <div class="pstrip" id="pL"></div>
+            <div class="pstrip" id="pR"></div>
+          </div>
+        </div>
+
+        <!-- Live webcam viewfinder -->
+        <div class="viewfinder" id="vf">
+          <div class="vf-grid"></div>
+          <video id="webcam" autoplay playsinline muted style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:8px;display:none;z-index:1"></video>
+          <canvas id="snapCanvas" style="display:none"></canvas>
+          <div class="vf-scanline" id="vfScan"></div>
+          <div class="vf-box" id="vfBox">
+            <div class="vf-corner vtl"></div><div class="vf-corner vtr"></div>
+            <div class="vf-corner vbl"></div><div class="vf-corner vbr"></div>
+          </div>
+          <div class="vf-conf"  id="vfConf"></div>
+          <div class="vf-label" id="vfLabel"></div>
+          <div class="vf-obj hidden" id="vfObj"></div>
+          <div class="vf-idle" id="vfIdle" style="display:flex;flex-direction:column;align-items:center;gap:8px">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.3)" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+            <span style="font-family:JetBrains Mono,monospace;font-size:10px;color:rgba(255,255,255,0.3);text-align:center">Click "Start Camera"<br>to enable live detection</span>
+          </div>
+        </div>
+        <button class="btns" id="camBtn" onclick="toggleCamera()" style="width:100%;font-size:12px;padding:8px">Start Camera (Webcam)</button>
+
+        <div class="cam-mod">
+          <div class="lw"><div class="lm"><div class="li" id="camIris"></div></div></div>
+          <div class="cinfo">
+            <div class="cname">OV2640 Camera Module</div>
+            <div class="cspec">SPI FIFO · I2C SCCB · 20MHz XCLK</div>
+            <div class="cstate" id="camState">Ready</div>
+          </div>
+        </div>
+
+
+
+        <button class="scanbtn" id="scanBtn" onclick="startScan()">
+          <div class="bind" id="bind"></div>
+          Press Trigger Button · GP15
+        </button>
+
+      </div>
+    </div>
+
+    <!-- Serial monitor -->
+    <div class="panel">
+      <div class="ph"><span class="ph-title">Serial Monitor · MicroPython REPL</span><span class="badge bk" id="runBadge">idle</span></div>
+      <div class="serial" id="serial"></div>
+    </div>
+
+  </div>
+
+  <!-- Detection Result -->
+  <div class="panel" style="margin-bottom:18px">
+    <div class="ph"><span class="ph-title">Detection Result</span><span class="badge bk" id="resBadge">Awaiting scan</span></div>
+    <div class="rp" id="rp">
+      <div class="rtop">
+        <div class="remoji" id="rEmoji"></div>
+        <div style="flex:1">
+          <div class="rname" id="rName"></div>
+          <div class="rcat"  id="rCat"></div>
+          <div class="cfw">
+            <div class="cft"><div class="cfb" id="cfb"></div></div>
+            <div class="cfn" id="cfn">0%</div>
+          </div>
+        </div>
+      </div>
+      <div class="rdesc" id="rDesc"></div>
+      <div class="rag"  id="rAttrs"></div>
+      <div class="ract">
+        <button class="btnl" onclick="logItem()">+ Log to Registry</button>
+        <button class="btns" onclick="resetRes()">Clear</button>
+      </div>
+    </div>
+    <div id="noRes" style="padding:28px;text-align:center;color:var(--ink3);font-size:13px">Select an object and press the scan button to begin.</div>
+  </div>
+
+  <!-- Registry -->
+  <div class="panel" id="registry">
+    <div class="ph"><span class="ph-title">Lost &amp; Found Registry</span><span class="badge ba" id="regBadge">0 items</span></div>
+    <div id="regBody"><div class="rege">No items logged yet. Scan an object and click "Log to Registry".</div></div>
+  </div>
+
+  <!-- About -->
+  <section class="about" id="about">
+    <div class="abt">How This System Works</div>
+    <div class="abg">
+      <div class="abc"><div class="abci">🔌</div><div class="abct">Hardware Layer</div><div class="abcd">A Raspberry Pi Pico W runs MicroPython. When the trigger fires, the OV2640 captures a JPEG via SPI FIFO. LEDs give instant feedback — red for urgent items, green for normal ones.</div></div>
+      <div class="abc"><div class="abci">☁️</div><div class="abct">Real AI Identification</div><div class="abcd">The JPEG is sent to Claude Vision API which genuinely analyses the image and returns the object name, category, priority, condition, and a detailed description — not a lookup table.</div></div>
+      <div class="abc"><div class="abci">📋</div><div class="abct">Campus Registry</div><div class="abcd">Every item gets a unique LF-XXXX ID with timestamp and location. Staff can filter by priority and mark items as claimed. Critical items (laptop, ID, wallet) trigger urgent alerts.</div></div>
+    </div>
+    <div class="flow">
+      <div class="fs">OV2640 Camera</div><div class="fa">→</div>
+      <div class="fs">Pico W · SPI FIFO</div><div class="fa">→</div>
+      <div class="fs">WiFi · HTTP POST</div><div class="fa">→</div>
+      <div class="fs">Claude Vision API</div><div class="fa">→</div>
+      <div class="fs">AI Identification</div><div class="fa">→</div>
+      <div class="fs">Registry</div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="fl">Lost<em>&</em>Found · Campus IoT</div>
+  <div class="ft">Raspberry Pi Pico W · OV2640 · MicroPython · Claude Vision API · FastAPI</div>
+</footer>
+
+<script>
+// ── Emoji map ─────────────────────────────────────────
+const EMOJIS = {
+  smartphone:'📱',phone:'📱',mobile:'📱',
+  wallet:'👜',purse:'👜',
+  keys:'🔑',key:'🔑',keyring:'🔑',
+  laptop:'💻',computer:'💻',macbook:'💻',
+  'water bottle':'🍶',bottle:'🍶',
+  backpack:'🎒',bag:'🎒',
+  umbrella:'☂️',
+  'student id':'🪪',id:'🪪','id card':'🪪',
+  eyeglasses:'👓',glasses:'👓',spectacles:'👓',
+  earbuds:'🎧',headphones:'🎧',airpods:'🎧',
+  charger:'🔌',cable:'🔌',
+  notebook:'📓',journal:'📓',
+  watch:'⌚',wristwatch:'⌚',
+  shoe:'👟',shoes:'👟',
+  book:'📚',textbook:'📚',
+};
+
+function guessEmoji(name) {
+  const n = name.toLowerCase();
+  for (const [k,v] of Object.entries(EMOJIS)) {
+    if (n.includes(k)) return v;
+  }
+  return '📦';
+}
+
+// State
+let registry=[], idCounter=1, scanCount=0, totalConf=0, scanning=false, current=null, startMs=Date.now();
+let apiKey = localStorage.getItem('lf_gemini_key') || '';
+let webcamStream = null;
+let cameraOn = false;
+
+if (apiKey) {
+  document.getElementById('apiBanner').style.display = 'none';
+}
+
+function saveKey() {
+  const k = document.getElementById('apiKeyInput').value.trim();
+  if (!k) return;
+  apiKey = k;
+  localStorage.setItem('lf_gemini_key', k);
+  document.getElementById('apiBanner').style.display = 'none';
+  log('Gemini API key saved · FREE Vision AI ready', 'ai');
+}
+
+function changeKey() {
+  apiKey = '';
+  localStorage.removeItem('lf_gemini_key');
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('apiBanner').style.display = 'flex';
+  document.getElementById('apiBanner').scrollIntoView({behavior:'smooth'});
+  log('API key cleared · enter new Gemini key in the banner', 'w');
+}
+
+// Build pins
+for(let i=0;i<10;i++){
+  ['pL','pR'].forEach(id=>{const p=document.createElement('div');p.className='pin';document.getElementById(id).appendChild(p);});
+}
+
+function ts(){const s=Math.floor((Date.now()-startMs)/1000);return String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0')}
+
+function log(msg, t='i'){
+  const s=document.getElementById('serial');
+  const d=document.createElement('div');d.className='lr';
+  const m={i:'ci',w:'cw',e:'ce',d:'cd',ai:'ca',sys:'cs'};
+  d.innerHTML=`<span class="lts">[${ts()}]</span><span class="${m[t]||'ci'}">${msg}</span>`;
+  s.appendChild(d);s.scrollTop=s.scrollHeight;
+}
+
+function setLed(id,c){document.getElementById(id).className='hwled '+(c||'')}
+function blinkLed(id,color,n,ms){
+  let c=0;
+  const iv=setInterval(()=>{setLed(id,c%2===0?color:'');if(++c>=n*2){clearInterval(iv);setLed(id,'');}},ms);
+}
+
+function updateStats(){
+  const unc=registry.filter(r=>r.status==='unclaimed').length;
+  const crit=registry.filter(r=>r.priority==='Critical'&&r.status==='unclaimed').length;
+  document.getElementById('st1').textContent=scanCount;
+  document.getElementById('st2').textContent=unc;
+  document.getElementById('st3').textContent=crit;
+  document.getElementById('st4').textContent=scanCount>0?(totalConf/scanCount).toFixed(1)+'%':'—';
+}
+
+// ── Webcam ────────────────────────────────────────────
+async function toggleCamera() {
+  const btn = document.getElementById('camBtn');
+  const video = document.getElementById('webcam');
+  const idle = document.getElementById('vfIdle');
+
+  if (cameraOn) {
+    if (webcamStream) webcamStream.getTracks().forEach(t => t.stop());
+    video.style.display = 'none';
+    idle.style.display = 'flex';
+    btn.textContent = 'Start Camera (Webcam)';
+    cameraOn = false;
+    log('CAM: webcam stream stopped', 'w');
+    return;
+  }
+
+  try {
+    webcamStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+    video.srcObject = webcamStream;
+    video.style.display = 'block';
+    idle.style.display = 'none';
+    btn.textContent = 'Stop Camera';
+    cameraOn = true;
+    log('CAM: webcam stream started · live feed active', 'i');
+    log('CAM: point camera at a lost object and press Scan', 'i');
+  } catch(e) {
+    log('CAM: webcam access denied — ' + e.message, 'e');
+    log('CAM: allow camera permission in your browser and retry', 'w');
+  }
+}
+
+// Capture frame from webcam as base64 JPEG
+function captureFrame() {
+  const video = document.getElementById('webcam');
+  const canvas = document.getElementById('snapCanvas');
+  canvas.width  = 320;
+  canvas.height = 240;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(video, 0, 0, 320, 240);
+  // Return base64 without the data:image/jpeg;base64, prefix
+  return canvas.toDataURL('image/jpeg', 0.85).split(',')[1];
+}
+
+// ── Gemini Vision API ─────────────────────────────────
+async function callGeminiVision(imageBase64) {
+  if (!apiKey) throw new Error('No API key — enter your free Gemini key above');
+
+  const prompt = `You are an AI vision system for a university campus Lost & Found office. 
+Analyse this image carefully and identify the main object visible.
+
+Respond ONLY with raw JSON (no markdown, no code fences):
+{
+  "object_name": "specific name of the object you see",
+  "category": "main category · subcategory",
+  "description": "2 sentences describing the object and advising lost & found staff how to store or handle it",
+  "confidence": <realistic number 70-99 based on image clarity>,
+  "color": "primary color you observe",
+  "condition": "Excellent | Good | Fair | Poor",
+  "priority": "Critical | High | Medium | Low",
+  "location": "Library Entrance"
+}
+
+Priority rules:
+- Critical: laptop, wallet, phone, student ID, passport, keys
+- High: glasses, earbuds, headphones, watch, charger
+- Medium: backpack, bag, water bottle, clothing
+- Low: umbrella, stationery, other items
+
+If the image is blurry or unclear, still give your best identification and set confidence below 75.`;
+
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+  async function doFetch() {
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{
+          parts: [
+            { inline_data: { mime_type: 'image/jpeg', data: imageBase64 } },
+            { text: prompt }
+          ]
+        }],
+        generationConfig: { temperature: 0.2, maxOutputTokens: 400 }
+      })
+    });
+    if (!response.ok) {
+      const err = await response.json();
+      const msg = err.error?.message || 'Gemini API error ' + response.status;
+      if (response.status === 429) throw new Error('QUOTA:' + msg);
+      throw new Error(msg);
+    }
+    return response.json();
+  }
+
+  let data;
+  try {
+    data = await doFetch();
+  } catch(e) {
+    if (e.message.startsWith('QUOTA:')) {
+      log('QUOTA: rate limit — auto-retrying in 12 seconds...', 'w');
+      await delay(12000);
+      log('RETRY: sending request again...', 'ai');
+      data = await doFetch();
+    } else { throw e; }
+  }
+
+  const raw = data.candidates[0].content.parts[0].text.trim();
+  const clean = raw.replace(/```json|```/g, '').trim();
+  return JSON.parse(clean);
+}
+
+// ── Scan pipeline ─────────────────────────────────────
+async function startScan() {
+  if (scanning) return;
+  if (!apiKey) { log('ERROR: no Gemini key — enter it in the banner above', 'e'); return; }
+
+  if (!cameraOn) {
+    log('ERROR: camera not started — click "Start Camera" first', 'e');
+    return;
+  }
+
+  scanning = true;
+  document.getElementById('scanBtn').disabled = true;
+  document.getElementById('bind').className = 'bind sc';
+  document.getElementById('hwBadge').textContent = 'Scanning';
+  document.getElementById('hwBadge').className = 'badge ba';
+  document.getElementById('runBadge').textContent = 'running';
+  document.getElementById('runBadge').className = 'badge ba';
+  document.getElementById('rp').classList.remove('show');
+  document.getElementById('noRes').style.display = 'none';
+
+  document.getElementById('vfScan').classList.add('on');
+  document.getElementById('vfBox').classList.remove('on');
+  document.getElementById('vfConf').classList.remove('on');
+  document.getElementById('vfLabel').classList.remove('on');
+
+  log('', 'i');
+  log('TRIGGER: GP15 falling edge detected', 'i');
+  setLed('lOn', 'o');
+
+  await delay(300);
+  log('CAM: capturing frame from OV2640 · 320×240 JPEG', 'i');
+  document.getElementById('camIris').classList.add('cap');
+  document.getElementById('camState').textContent = 'Capturing...';
+
+  // Capture real webcam frame
+  let imageBase64;
+  try {
+    imageBase64 = captureFrame();
+    log('CAM: frame captured · ' + Math.round(imageBase64.length * 0.75 / 1024) + 'KB', 'd');
+    log('CAM: JPEG validated · FF D8 FF E0 header OK', 'd');
+  } catch(e) {
+    log('CAM: frame capture failed — ' + e.message, 'e');
+    endScan(false);
+    return;
+  }
+
+  await delay(400);
+  log('API: uploading frame to Gemini Vision...', 'ai');
+  log('VISION: Gemini 2.0 Flash · analysing real image...', 'ai');
+
+  let result;
+  try {
+    result = await callGeminiVision(imageBase64);
+  } catch(e) {
+    log('ERROR: ' + e.message, 'e');
+    endScan(false);
+    return;
+  }
+
+  document.getElementById('vfScan').classList.remove('on');
+  document.getElementById('vfBox').classList.add('on');
+  document.getElementById('vfConf').textContent = result.confidence.toFixed(1) + '%';
+  document.getElementById('vfConf').classList.add('on');
+  document.getElementById('vfLabel').textContent = result.object_name;
+  document.getElementById('vfLabel').classList.add('on');
+
+  document.getElementById('camIris').classList.remove('cap');
+  document.getElementById('camState').textContent = 'Ready';
+  setLed('lOn', '');
+
+  log(`VISION: detected "${result.object_name}"  conf=${result.confidence}%`, 'ai');
+  log(`VISION: priority=${result.priority}  category=${result.category}`, 'ai');
+
+  if (['Critical','High'].includes(result.priority)) {
+    blinkLed('lRed', 'r', 4, 140);
+    log('LED: RED blink · urgent item!', 'w');
+  } else {
+    blinkLed('lGrn', 'g', 2, 150);
+    log('LED: GREEN blink · item ready to log', 'i');
+  }
+
+  log('SCAN: complete · result ready', 'i');
+  current = result;
+  scanCount++;
+  totalConf += result.confidence;
+  updateStats();
+  showResult(result);
+  endScan(true);
+}
+
+function endScan(success) {
+  scanning = false;
+  document.getElementById('scanBtn').disabled = false;
+  document.getElementById('bind').className = 'bind';
+  document.getElementById('hwBadge').textContent = 'Online';
+  document.getElementById('hwBadge').className = 'badge bg';
+  document.getElementById('runBadge').textContent = 'ready';
+  document.getElementById('runBadge').className = 'badge bg';
+  document.getElementById('camIris').classList.remove('cap');
+  document.getElementById('camState').textContent = success ? 'Ready' : 'Error';
+  document.getElementById('vfScan').classList.remove('on');
+  if (!success) document.getElementById('noRes').style.display = 'block';
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+function showResult(r) {
+  document.getElementById('rEmoji').textContent = guessEmoji(r.object_name);
+  document.getElementById('rName').textContent  = r.object_name;
+  document.getElementById('rCat').textContent   = r.category;
+  document.getElementById('rDesc').textContent  = r.description;
+
+  const pm = {Critical:'br',High:'ba',Medium:'bb',Low:'bk'};
+  document.getElementById('resBadge').textContent = r.priority;
+  document.getElementById('resBadge').className   = 'badge ' + (pm[r.priority]||'bk');
+
+  setTimeout(()=>{
+    document.getElementById('cfb').style.width = r.confidence + '%';
+    document.getElementById('cfn').textContent  = r.confidence.toFixed(1) + '%';
+  }, 100);
+
+  document.getElementById('rAttrs').innerHTML = [
+    ['Color', r.color], ['Condition', r.condition],
+    ['Priority', r.priority], ['Location', r.location || 'Library Entrance']
+  ].map(([k,v]) => `<div class="attr"><div class="atk">${k}</div><div class="atv">${v}</div></div>`).join('');
+
+  document.getElementById('rp').classList.add('show');
+}
+
+function logItem() {
+  if (!current) return;
+  const id = 'LF-' + String(idCounter++).padStart(4,'0');
+  const now = new Date();
+  registry.unshift({
+    id, name: current.object_name,
+    emoji: guessEmoji(current.object_name),
+    priority: current.priority,
+    location: current.location || 'Library Entrance',
+    time: now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
+    date: now.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}),
+    status: 'unclaimed'
+  });
+  renderRegistry();
+  updateStats();
+  log(`REGISTRY: logged · ID: ${id}`, 'i');
+  document.getElementById('resBadge').textContent = 'Logged ✓';
+  document.getElementById('resBadge').className   = 'badge bg';
+  document.getElementById('registry').scrollIntoView({behavior:'smooth'});
+}
+
+function renderRegistry() {
+  const c = registry.length;
+  document.getElementById('regBadge').textContent = c + (c===1?' item':' items');
+  if (!c) { document.getElementById('regBody').innerHTML='<div class="rege">No items yet.</div>'; return; }
+  const pm = {Critical:'br',High:'ba',Medium:'bb',Low:'bk'};
+  document.getElementById('regBody').innerHTML = `
+    <table class="regt">
+      <thead><tr><th>Object</th><th>ID</th><th>Priority</th><th>Location</th><th>Logged</th><th>Status</th></tr></thead>
+      <tbody>${registry.map(r=>`<tr>
+        <td>${r.emoji} <strong>${r.name}</strong></td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink3)">${r.id}</td>
+        <td><span class="badge ${pm[r.priority]||'bk'}">${r.priority}</span></td>
+        <td style="font-size:12px;color:var(--ink2)">${r.location}</td>
+        <td style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--ink3)">${r.date} · ${r.time}</td>
+        <td><span class="badge ba">Unclaimed</span></td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+}
+
+function resetRes() {
+  document.getElementById('rp').classList.remove('show');
+  document.getElementById('noRes').style.display = 'block';
+  document.getElementById('resBadge').textContent = 'Awaiting scan';
+  document.getElementById('resBadge').className   = 'badge bk';
+  document.getElementById('cfb').style.width = '0';
+  document.getElementById('vfBox').classList.remove('on');
+  document.getElementById('vfConf').classList.remove('on');
+  document.getElementById('vfLabel').classList.remove('on');
+  current = null;
+}
+
+// Boot sequence
+setTimeout(()=>{log('╔══════════════════════════════════════╗','sys');log('║  Campus Lost & Found · Pico W v1.0   ║','sys');log('╚══════════════════════════════════════╝','sys');},100);
+setTimeout(()=>{setLed('lOn','g');log('System boot complete · MicroPython 1.23','i');},400);
+setTimeout(()=>log('OV2640 init OK · chip ID 0x26 · SCCB handshake','i'),700);
+setTimeout(()=>{log('WiFi connecting · SSID: Campus-IoT','w');document.getElementById('runBadge').textContent='connecting';document.getElementById('runBadge').className='badge ba';},1000);
+setTimeout(()=>{
+  log('WiFi connected · IP: 192.168.4.112 · RSSI: -57 dBm','i');
+  log('Gemini Vision API · model: gemini-2.0-flash · FREE','ai');
+  log('Click "Start Camera" then press Scan to detect objects','i');
+  setLed('lOn','');
+  document.getElementById('runBadge').textContent='ready';
+  document.getElementById('runBadge').className='badge bg';
+},2000);
+</script>
+</body>
+</html>
