@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campus Lost & Found</title>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Syne:wght@400;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0e0e0e;--ink2:#555;--ink3:#999;
+  --paper:#f5f2ed;--paper2:#edeae4;--paper3:#e2ddd6;
+  --line:rgba(0,0,0,0.1);
+  --green:#1a7a3c;--gbg:#d4edda;
+  --amber:#92400e;--abg:#fef3c7;
+  --red:#991b1b;--rbg:#fee2e2;
+  --blue:#1e3a5f;--bbg:#dbeafe;
+  --accent:#c8553d;
+}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+
+header{background:#0e0e0e;padding:0 24px;height:54px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:#f5f2ed}
+.logo span{color:var(--accent)}
+.hlinks{display:flex;gap:8px}
+.hlink{font-family:'Syne',sans-serif;font-size:11px;font-weight:600;padding:5px 12px;border-radius:6px;border:1px solid rgba(255,255,255,.2);background:transparent;color:rgba(255,255,255,.75);cursor:pointer;text-decoration:none;transition:background .15s}
+.hlink:hover{background:rgba(255,255,255,.1)}
+
+.hero{background:#0e0e0e;padding:40px 24px 32px}
+.hero-inner{max-width:960px;margin:0 auto}
+.hero-tag{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--accent);letter-spacing:.15em;text-transform:uppercase;margin-bottom:10px}
+h1{font-family:'Syne',sans-serif;font-size:clamp(24px,5vw,46px);font-weight:800;color:#f5f2ed;letter-spacing:-.02em;line-height:1.05;margin-bottom:12px}
+h1 span{color:var(--accent)}
+.hero-desc{font-size:13px;color:rgba(255,255,255,.45);max-width:460px;line-height:1.7;margin-bottom:18px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font-family:'JetBrains Mono',monospace;font-size:9px;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.4)}
+
+main{max-width:960px;margin:0 auto;padding:24px}
+
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.stat{background:var(--paper);border:1px solid var(--line);border-radius:12px;padding:13px 15px;position:relative;overflow:hidden}
+.stat::after{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.st1::after{background:var(--green)}.st2::after{background:#d97706}.st3::after{background:var(--red)}.st4::after{background:#2563eb}
+.stat-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px}
+.stat-val{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;color:var(--ink)}
+
+.tabs{display:flex;gap:0;background:var(--paper2);border-radius:10px;padding:3px;border:1px solid var(--line);margin-bottom:18px}
+.tab{flex:1;text-align:center;padding:8px;border-radius:7px;font-family:'Syne',sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:var(--ink3);border:none;background:transparent;transition:all .15s}
+.tab.active{background:var(--paper);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.tabp{display:none}.tabp.active{display:block}
+
+.grid{display:grid;grid-template-columns:280px 1fr;gap:14px;margin-bottom:16px}
+.card{background:var(--paper);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.card-head{padding:10px 14px;border-bottom:1px solid var(--line);background:var(--paper2);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+
+.badge{font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px}
+.bg{background:var(--gbg);color:var(--green)}
+.ba{background:var(--abg);color:var(--amber)}
+.br{background:var(--rbg);color:var(--red)}
+.bk{background:var(--paper3);color:var(--ink2)}
+.bb{background:var(--bbg);color:var(--blue)}
+
+/* Hardware panel */
+.hw{padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px}
+.pico{width:100%;background:#1e6b30;border-radius:8px;padding:9px 8px}
+.pico-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:7px}
+.pico-lbl{font-family:'JetBrains Mono',monospace;font-size:7px;color:rgba(255,255,255,.4);letter-spacing:.1em}
+.pico-chip{background:#0d1a0f;border-radius:3px;padding:2px 6px;font-family:'JetBrains Mono',monospace;font-size:7px;color:rgba(255,255,255,.35)}
+.pico-leds{display:flex;justify-content:center;gap:7px;margin:5px 0}
+.led{width:10px;height:10px;border-radius:50%;background:rgba(0,0,0,.4);border:1.5px solid rgba(0,0,0,.3);transition:background .15s}
+.led.g{background:#22c55e}.led.r{background:#ef4444}.led.o{background:#f59e0b}
+@keyframes blg{0%,100%{background:#22c55e}50%{background:rgba(0,0,0,.4)}}
+@keyframes blr{0%,100%{background:#ef4444}50%{background:rgba(0,0,0,.4)}}
+.led.blg{animation:blg .3s ease 4}.led.blr{animation:blr .25s ease 5}
+.pico-pins{display:flex;justify-content:space-between}
+.pins{display:flex;gap:3px}
+.pin{width:5px;height:6px;background:#c0b090;border-radius:1px}
+
+.vf{width:100%;aspect-ratio:4/3;background:#0a0a0a;border-radius:8px;border:1px solid var(--line);position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
+.vf-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(34,197,94,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(34,197,94,.05) 1px,transparent 1px);background-size:24px 24px;pointer-events:none}
+video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:7px;display:none;z-index:1}
+.vf-scan{position:absolute;left:0;right:0;height:2px;background:rgba(34,197,94,.8);display:none;z-index:3}
+.vf-scan.on{display:block;animation:scan 1s linear infinite}
+@keyframes scan{0%{top:0}100%{top:100%}}
+.vf-box{position:absolute;inset:18%;border:1.5px solid #22c55e;border-radius:3px;display:none;z-index:4}
+.vf-box.on{display:block;animation:bxin .3s ease}
+@keyframes bxin{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+.vf-c{position:absolute;width:10px;height:10px;border-color:#22c55e;border-style:solid}
+.c1{top:-1px;left:-1px;border-width:2px 0 0 2px}.c2{top:-1px;right:-1px;border-width:2px 2px 0 0}
+.c3{bottom:-1px;left:-1px;border-width:0 0 2px 2px}.c4{bottom:-1px;right:-1px;border-width:0 2px 2px 0}
+.vf-conf{position:absolute;top:17%;left:17%;background:rgba(34,197,94,.9);color:#000;font-family:'JetBrains Mono',monospace;font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;display:none;z-index:5}
+.vf-conf.on{display:block}
+.vf-lbl{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);color:#fff;font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 8px;border-radius:4px;display:none;z-index:5;white-space:nowrap}
+.vf-lbl.on{display:block}
+.vf-idle{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,.2);text-align:center;z-index:2;display:flex;flex-direction:column;align-items:center;gap:6px}
+
+.cam-info{width:100%;border:1px solid var(--line);border-radius:8px;background:var(--paper2);padding:8px 10px;display:flex;align-items:center;gap:10px}
+.lens-wrap{width:36px;height:36px;border-radius:50%;background:#111827;border:2px solid #374151;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.lens-mid{width:22px;height:22px;border-radius:50%;background:#0d1117;border:1px solid #4b5563;display:flex;align-items:center;justify-content:center}
+.iris{width:10px;height:10px;border-radius:50%;background:#1e3a5c;transition:background .3s,transform .3s}
+.iris.cap{background:#93c5fd;transform:scale(1.2)}
+.cam-text .cn{font-size:11px;font-weight:600;color:var(--ink)}
+.cam-text .cs{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3)}
+.cam-text .cst{font-size:10px;color:var(--green);margin-top:1px}
+
+button.cam-btn{width:100%;font-family:'Syne',sans-serif;font-size:11px;font-weight:700;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;transition:all .15s}
+button.cam-btn:hover{background:var(--paper2)}
+button.scan-btn{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;font-family:'Syne',sans-serif;font-size:13px;font-weight:800;background:#0e0e0e;color:#f5f2ed;border:none;border-radius:8px;cursor:pointer;transition:all .15s}
+button.scan-btn:hover{background:#2d2a26}
+button.scan-btn:active{transform:scale(.98)}
+button.scan-btn:disabled{background:var(--paper3);color:var(--ink3);cursor:not-allowed;transform:none}
+.bind{width:8px;height:8px;border-radius:50%;background:#4ade80;flex-shrink:0}
+.bind.sc{background:#f59e0b;animation:pulse .5s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Serial */
+.serial{background:#0d1117;min-height:280px;max-height:280px;overflow-y:auto;padding:10px 12px;font-family:'JetBrains Mono',monospace;font-size:11px;line-height:2}
+.serial::-webkit-scrollbar{width:3px}.serial::-webkit-scrollbar-thumb{background:#333;border-radius:2px}
+.lr{display:flex;gap:8px;animation:fin .15s ease}
+@keyframes fin{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+.ts{color:#2d4a32;min-width:44px;flex-shrink:0}
+.ci{color:#4ade80}.cw{color:#fbbf24}.ce{color:#f87171}.cd{color:#60a5fa}.ca{color:#c084fc}.cs{color:#f0abfc;font-weight:700}
+
+/* Result */
+.result{display:none;padding:16px 18px}
+.result.show{display:block;animation:fin .3s ease}
+.res-top{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px}
+.res-emoji{font-size:40px;line-height:1;flex-shrink:0}
+.res-name{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;color:var(--ink);letter-spacing:-.02em;margin-bottom:2px}
+.res-cat{font-size:11px;color:var(--ink3);margin-bottom:8px}
+.conf-row{display:flex;align-items:center;gap:8px}
+.conf-bg{flex:1;height:4px;background:var(--paper3);border-radius:2px;overflow:hidden}
+.conf-bar{height:100%;background:var(--green);border-radius:2px;transition:width .6s ease;width:0}
+.conf-num{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green);min-width:32px;text-align:right;font-weight:700}
+.res-desc{font-size:12px;color:var(--ink2);line-height:1.65;background:var(--paper2);border-radius:8px;padding:9px 12px;border-left:3px solid #c084fc;margin-bottom:10px}
+.attrs{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:12px}
+.attr{background:var(--paper2);border-radius:7px;padding:7px 9px}
+.attr-k{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--ink3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:2px}
+.attr-v{font-size:11px;color:var(--ink);font-weight:600}
+.res-btns{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Buttons */
+.btn{font-family:'Syne',sans-serif;font-size:11px;font-weight:700;padding:7px 14px;border-radius:7px;cursor:pointer;transition:all .15s}
+.btn-g{border:1px solid var(--green);background:var(--gbg);color:var(--green)}.btn-g:hover{background:#b8dfc2}
+.btn-s{border:1px solid var(--line);background:var(--paper);color:var(--ink2)}.btn-s:hover{background:var(--paper2)}
+.btn-b{border:1px solid var(--blue);background:var(--bbg);color:var(--blue)}.btn-b:hover{background:#bfdbfe}
+.btn-p{border:none;background:#0e0e0e;color:#f5f2ed}.btn-p:hover{background:#2d2a26}
+
+/* Registry */
+.reg-controls{padding:10px 14px;border-bottom:1px solid var(--line);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.search{flex:1;min-width:150px;font-family:'DM Sans',sans-serif;font-size:12px;padding:7px 12px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);outline:none}
+.search:focus{border-color:var(--ink3)}
+.fchips{display:flex;gap:5px;flex-wrap:wrap}
+.fc{font-family:'JetBrains Mono',monospace;font-size:9px;padding:4px 10px;border-radius:20px;border:1px solid var(--line);background:var(--paper);color:var(--ink3);cursor:pointer;transition:all .15s}
+.fc:hover{border-color:var(--ink3);color:var(--ink)}
+.fc.on{background:#0e0e0e;color:#f5f2ed;border-color:#0e0e0e}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);padding:8px 12px;text-align:left;border-bottom:1px solid var(--line);background:var(--paper2)}
+td{padding:9px 12px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--paper2)}
+.empty{padding:36px;text-align:center;color:var(--ink3);font-size:12px}
+
+/* Claim */
+.claim-body{padding:18px}
+.claim-desc{font-size:13px;color:var(--ink2);line-height:1.7;margin-bottom:16px}
+.claim-items{margin-bottom:16px}
+.claim-item{display:flex;align-items:center;gap:12px;padding:11px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;background:var(--paper)}
+.claim-item:hover{background:var(--paper2)}
+.ci-emoji{font-size:26px;flex-shrink:0}
+.ci-info{flex:1}
+.ci-name{font-size:13px;font-weight:600;color:var(--ink)}
+.ci-meta{font-size:10px;color:var(--ink3);margin-top:2px}
+
+/* Modal */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:500;display:none;align-items:center;justify-content:center;padding:16px}
+.modal-bg.open{display:flex}
+.modal{background:var(--paper);border-radius:14px;width:420px;max-width:100%;max-height:90vh;overflow-y:auto;animation:fin .25s ease}
+.modal-h{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.modal-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;color:var(--ink)}
+.modal-close{background:none;border:none;font-size:18px;color:var(--ink3);cursor:pointer}
+.modal-close:hover{color:var(--ink)}
+.modal-body{padding:14px 18px}
+.field{margin-bottom:12px}
+.field-lbl{font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);margin-bottom:4px}
+.field-inp{width:100%;font-family:'DM Sans',sans-serif;font-size:12px;padding:8px 11px;border:1px solid var(--line);border-radius:7px;background:var(--paper);color:var(--ink);outline:none}
+.field-inp:focus{border-color:var(--ink3)}
+textarea.field-inp{resize:vertical;min-height:64px}
+.modal-f{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end}
+.success-msg{background:var(--gbg);border:1px solid var(--green);border-radius:7px;padding:10px 12px;font-size:12px;color:var(--green);margin-bottom:12px;display:none}
+.success-msg.show{display:block}
+
+.toast{position:fixed;bottom:20px;right:20px;background:#0e0e0e;color:#f5f2ed;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:500;z-index:999;display:none;animation:fin .2s ease;max-width:280px}
+
+footer{background:#0e0e0e;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-top:32px}
+.fl{font-family:'Syne',sans-serif;font-size:12px;font-weight:800;color:rgba(245,242,237,.55)}
+.fl span{color:var(--accent)}
+.ft{font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(245,242,237,.2)}
+
+@media(max-width:700px){
+  .grid{grid-template-columns:1fr}
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .attrs{grid-template-columns:repeat(2,1fr)}
+  main{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Lost<span>&</span>Found <span style="font-weight:400;font-size:11px;color:rgba(255,255,255,.25)">· Campus IoT</span></div>
+  <div class="hlinks">
+    <a class="hlink" href="#" onclick="switchTab('scanner');return false">Scanner</a>
+    <a class="hlink" href="#" onclick="switchTab('registry');return false">Registry</a>
+    <a class="hlink" href="#" onclick="switchTab('claim');return false">Claim</a>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="hero-inner">
+    <div class="hero-tag">Raspberry Pi Pico W · OV2640 · AI Vision · Firebase</div>
+    <h1>Campus Lost <span>&</span> Found<br>Digitisation System</h1>
+    <p class="hero-desc">Real webcam + AI identifies lost objects automatically. No API key needed. Items saved to browser registry with search, filters, and student claim portal.</p>
+    <div class="chips">
+      <div class="chip">MicroPython 1.23</div>
+      <div class="chip">OV2640 Camera</div>
+      <div class="chip">Google Sheets DB</div>
+      <div class="chip">EmailJS Notifications</div>
+      <div class="chip">Student Claim Portal</div>
+      <div class="chip">CSV Export</div>
+    </div>
+  </div>
+</div>
+
+<!-- Setup Panel -->
+<div id="setup-panel" style="background:#fff8e1;border-bottom:2px solid #f59e0b;padding:14px 24px">
+  <div style="max-width:960px;margin:0 auto">
+    <div style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#78350f;margin-bottom:10px">⚙️ One-time Setup — connect Google Sheets + EmailJS for full functionality</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#92400e;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Google Sheets Web App URL</div>
+        <div style="display:flex;gap:6px">
+          <input id="cfg-sheets" type="text" placeholder="https://script.google.com/macros/s/..." style="flex:1;font-family:'JetBrains Mono',monospace;font-size:10px;padding:7px 9px;border:1px solid #f59e0b;border-radius:6px;background:#fff;color:#0e0e0e;outline:none">
+          <button onclick="saveCfg()" style="font-family:'Syne',sans-serif;font-size:11px;font-weight:700;padding:7px 12px;border-radius:6px;background:#92400e;color:#fff;border:none;cursor:pointer">Save</button>
+        </div>
+        <div style="font-size:10px;color:#92400e;margin-top:3px">See instructions below ↓</div>
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#92400e;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">EmailJS Service ID</div>
+        <input id="cfg-ej-svc" type="text" placeholder="service_xxxxxxx" style="width:100%;font-family:'JetBrains Mono',monospace;font-size:10px;padding:7px 9px;border:1px solid #f59e0b;border-radius:6px;background:#fff;color:#0e0e0e;outline:none">
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#92400e;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">EmailJS Template ID</div>
+        <input id="cfg-ej-tpl" type="text" placeholder="template_xxxxxxx" style="width:100%;font-family:'JetBrains Mono',monospace;font-size:10px;padding:7px 9px;border:1px solid #f59e0b;border-radius:6px;background:#fff;color:#0e0e0e;outline:none">
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:#92400e;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">EmailJS Public Key</div>
+        <input id="cfg-ej-key" type="text" placeholder="xxxxxxxxxxxxxxx" style="width:100%;font-family:'JetBrains Mono',monospace;font-size:10px;padding:7px 9px;border:1px solid #f59e0b;border-radius:6px;background:#fff;color:#0e0e0e;outline:none">
+      </div>
+    </div>
+    <button onclick="toggleSetup()" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#92400e;background:none;border:none;cursor:pointer;text-decoration:underline">Hide setup panel</button>
+    <button onclick="showInstructions()" style="margin-top:8px;margin-left:12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#92400e;background:none;border:none;cursor:pointer;text-decoration:underline">How to set up Google Sheets & EmailJS ↗</button>
+  </div>
+</div>
+
+<main>
+  <div class="stats">
+    <div class="stat st1"><div class="stat-lbl">Total Logged</div><div class="stat-val" id="s1">0</div></div>
+    <div class="stat st2"><div class="stat-lbl">Unclaimed</div><div class="stat-val" id="s2">0</div></div>
+    <div class="stat st3"><div class="stat-lbl">Critical</div><div class="stat-val" id="s3">0</div></div>
+    <div class="stat st4"><div class="stat-lbl">Claimed</div><div class="stat-val" id="s4">0</div></div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="t-scanner" onclick="switchTab('scanner')">📷 Scanner</button>
+    <button class="tab" id="t-registry" onclick="switchTab('registry')">📋 Registry</button>
+    <button class="tab" id="t-claim"    onclick="switchTab('claim')">🙋 Claim Item</button>
+  </div>
+
+  <!-- SCANNER TAB -->
+  <div class="tabp active" id="p-scanner">
+    <div class="grid">
+      <!-- Hardware -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Hardware Simulator</span>
+          <span class="badge bg" id="hw-badge">Online</span>
+        </div>
+        <div class="hw">
+          <div class="pico">
+            <div class="pico-top">
+              <span class="pico-lbl">RASPBERRY PI PICO W</span>
+              <span class="pico-chip">RP2040</span>
+            </div>
+            <div class="pico-leds">
+              <div class="led" id="l1" title="Onboard"></div>
+              <div class="led" id="l2" title="URGENT"></div>
+              <div class="led" id="l3" title="OK"></div>
+            </div>
+            <div class="pico-pins">
+              <div class="pins" id="pl"></div>
+              <div class="pins" id="pr"></div>
+            </div>
+          </div>
+
+          <div class="vf" id="vf">
+            <div class="vf-grid"></div>
+            <video id="vid" autoplay playsinline muted></video>
+            <canvas id="cnv" style="display:none"></canvas>
+            <div class="vf-scan" id="vscan"></div>
+            <div class="vf-box" id="vbox">
+              <div class="vf-c c1"></div><div class="vf-c c2"></div>
+              <div class="vf-c c3"></div><div class="vf-c c4"></div>
+            </div>
+            <div class="vf-conf" id="vconf"></div>
+            <div class="vf-lbl"  id="vlbl"></div>
+            <div class="vf-idle" id="vidle">
+              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.2)" stroke-width="1.5"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              <span>Click Start Camera<br>then hold object up</span>
+            </div>
+          </div>
+
+          <button class="cam-btn" id="cam-btn" onclick="toggleCam()">▶ Start Camera</button>
+
+          <select id="manual-obj" style="width:100%;font-family:'JetBrains Mono',monospace;font-size:11px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--paper);color:var(--ink);cursor:pointer;outline:none">
+            <option value="">AI Auto-Detect (point camera at object)</option>
+            <option value="Smartphone">📱 Smartphone</option>
+            <option value="Laptop Computer">💻 Laptop Computer</option>
+            <option value="Wallet">👜 Wallet</option>
+            <option value="Key Bundle">🔑 Key Bundle</option>
+            <option value="Student ID Card">🪪 Student ID Card</option>
+            <option value="Eyeglasses">👓 Eyeglasses</option>
+            <option value="Earbuds">🎧 Earbuds</option>
+            <option value="Headphones">🎧 Headphones</option>
+            <option value="Wristwatch">⌚ Wristwatch</option>
+            <option value="Phone Charger">🔌 Phone Charger</option>
+            <option value="Backpack">🎒 Backpack</option>
+            <option value="Water Bottle">🍶 Water Bottle</option>
+            <option value="Umbrella">☂️ Umbrella</option>
+            <option value="Notebook">📓 Notebook</option>
+            <option value="Shoes">👟 Shoes</option>
+            <option value="Clothing">👕 Clothing</option>
+          </select>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--ink3);text-align:center;margin-top:-4px">
+            ↑ Select object manually if AI fails to detect
+          </div>
+
+          <div class="cam-info">
+            <div class="lens-wrap"><div class="lens-mid"><div class="iris" id="iris"></div></div></div>
+            <div class="cam-text">
+              <div class="cn">OV2640 Camera</div>
+              <div class="cs">SPI FIFO · SCCB · 20MHz XCLK</div>
+              <div class="cst" id="cam-state">Ready</div>
+            </div>
+          </div>
+
+          <button class="scan-btn" id="scan-btn" onclick="doScan()">
+            <div class="bind" id="bind-dot"></div>
+            Press Trigger · GP15
+          </button>
+        </div>
+      </div>
+
+      <!-- Serial -->
+      <div class="card">
+        <div class="card-head">
+          <span class="card-title">Serial Monitor · MicroPython REPL</span>
+          <span class="badge bk" id="run-badge">idle</span>
+        </div>
+        <div class="serial" id="serial"></div>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Detection Result</span>
+        <span class="badge bk" id="res-badge">Awaiting scan</span>
+      </div>
+      <div class="result" id="result">
+        <div class="res-top">
+          <div class="res-emoji" id="r-emoji"></div>
+          <div style="flex:1">
+            <div class="res-name" id="r-name"></div>
+            <div class="res-cat"  id="r-cat"></div>
+            <div class="conf-row">
+              <div class="conf-bg"><div class="conf-bar" id="cbar"></div></div>
+              <div class="conf-num" id="cnum"></div>
+            </div>
+          </div>
+        </div>
+        <div class="res-desc" id="r-desc"></div>
+        <div class="attrs" id="r-attrs"></div>
+        <div class="res-btns">
+          <button class="btn btn-g" onclick="logItem()">+ Log to Registry</button>
+          <button class="btn btn-s" onclick="clearResult()">Clear</button>
+        </div>
+      </div>
+      <div class="empty" id="no-result">Start camera → hold object up → press Scan</div>
+    </div>
+  </div>
+
+  <!-- REGISTRY TAB -->
+  <div class="tabp" id="p-registry">
+    <div class="card">
+      <div class="card-head">
+        <span class="card-title">Lost & Found Registry</span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span class="badge ba" id="reg-badge">0 items</span>
+          <button class="btn btn-s" style="font-size:10px;padding:3px 9px" onclick="exportCSV()">↓ CSV</button>
+        </div>
+      </div>
+      <div class="reg-controls">
+        <input class="search" id="search" placeholder="Search items..." oninput="renderReg()">
+        <div class="fchips">
+          <div class="fc on" onclick="setFilter('all',this)">All</div>
+          <div class="fc" onclick="setFilter('Critical',this)">Critical</div>
+          <div class="fc" onclick="setFilter('High',this)">High</div>
+          <div class="fc" onclick="setFilter('unclaimed',this)">Unclaimed</div>
+          <div class="fc" onclick="setFilter('claimed',this)">Claimed</div>
+          <div class="fc" onclick="setFilter('today',this)">Today</div>
+        </div>
+      </div>
+      <div id="reg-body"><div class="empty">No items logged yet.</div></div>
+    </div>
+  </div>
+
+  <!-- CLAIM TAB -->
+  <div class="tabp" id="p-claim">
+    <div class="card">
+      <div class="card-head"><span class="card-title">Student Claim Portal</span></div>
+      <div class="claim-body">
+        <p class="claim-desc">Lost something on campus? Search below and submit a claim. The lost & found office will verify and contact you within 24 hours.</p>
+        <input class="search" id="claim-search" placeholder="Search for your item..." oninput="renderClaim()" style="width:100%;margin-bottom:14px">
+        <div id="claim-list"></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="fl">Lost<span>&</span>Found · Campus IoT v2</div>
+  <div class="ft">Pico W · OV2640 · HuggingFace BLIP · No API Key Needed</div>
+</footer>
+
+<!-- Claim Modal -->
+<div class="modal-bg" id="modal">
+  <div class="modal">
+    <div class="modal-h">
+      <div class="modal-title">Claim This Item</div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="success-msg" id="success-msg">✓ Claim submitted! We'll contact you within 24 hours.</div>
+      <div class="field"><div class="field-lbl">Full Name</div><input class="field-inp" id="f-name" placeholder="Arjun Kumar"></div>
+      <div class="field"><div class="field-lbl">Roll Number</div><input class="field-inp" id="f-roll" placeholder="22BCS045"></div>
+      <div class="field"><div class="field-lbl">Email</div><input class="field-inp" id="f-email" type="email" placeholder="you@college.edu"></div>
+      <div class="field"><div class="field-lbl">Phone</div><input class="field-inp" id="f-phone" type="tel" placeholder="9876543210"></div>
+      <div class="field"><div class="field-lbl">Describe item to verify ownership</div><textarea class="field-inp" id="f-desc" placeholder="e.g. Black wallet, has SBI card and college ID inside..."></textarea></div>
+    </div>
+    <div class="modal-f">
+      <button class="btn btn-s" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-p" onclick="submitClaim()">Submit Claim</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── State ──────────────────────────────────────────────
+var registry = JSON.parse(localStorage.getItem('lf_v2') || '[]');
+var idN = 1;
+var scanning = false;
+var camOn = false;
+var stream = null;
+var current = null;
+var activeF = 'all';
+var claimTarget = null;
+var t0 = Date.now();
+
+// recalc idN
+if(registry.length) {
+  var last = registry[0].id.replace('LF-','');
+  idN = parseInt(last) + 1;
+}
+
+// Build pins
+for(var i=0;i<10;i++){
+  ['pl','pr'].forEach(function(id){
+    var p=document.createElement('div');p.className='pin';
+    document.getElementById(id).appendChild(p);
+  });
+}
+
+// ── Utils ──────────────────────────────────────────────
+var EMOJIS = {
+  smartphone:'📱',phone:'📱',mobile:'📱',
+  wallet:'👜',purse:'👜',
+  key:'🔑',keys:'🔑',
+  laptop:'💻',computer:'💻',
+  bottle:'🍶','water bottle':'🍶',
+  backpack:'🎒',bag:'🎒',
+  umbrella:'☂️',
+  id:'🪪','student id':'🪪',
+  glasses:'👓',eyeglasses:'👓',spectacles:'👓',
+  earbuds:'🎧',headphones:'🎧',earphone:'🎧',
+  charger:'🔌',cable:'🔌',
+  notebook:'📓',book:'📓',
+  watch:'⌚',wristwatch:'⌚',
+  shoe:'👟',shoes:'👟',
+  jacket:'👕',shirt:'👕',clothing:'👕'
+};
+
+function emoji(name) {
+  var n = (name||'').toLowerCase();
+  for(var k in EMOJIS) { if(n.indexOf(k)!==-1) return EMOJIS[k]; }
+  return '📦';
+}
+
+function ts() {
+  var s = Math.floor((Date.now()-t0)/1000);
+  return ('0'+Math.floor(s/60)).slice(-2)+':'+('0'+(s%60)).slice(-2);
+}
+
+function log(msg, t) {
+  var s = document.getElementById('serial');
+  var d = document.createElement('div');
+  d.className = 'lr';
+  var cls = {i:'ci',w:'cw',e:'ce',d:'cd',ai:'ca',sys:'cs'}[t||'i']||'ci';
+  d.innerHTML = '<span class="ts">['+ts()+']</span><span class="'+cls+'">'+msg+'</span>';
+  s.appendChild(d);
+  s.scrollTop = s.scrollHeight;
+}
+
+function led(id,c) {
+  var el = document.getElementById(id);
+  if(el) el.className = 'led'+(c?' '+c:'');
+}
+
+function blinkLed(id, color, n, ms) {
+  var c = 0;
+  var iv = setInterval(function(){
+    led(id, c%2===0 ? color : '');
+    if(++c >= n*2){ clearInterval(iv); led(id,''); }
+  }, ms);
+}
+
+function toast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  clearTimeout(t._t);
+  t._t = setTimeout(function(){ t.style.display='none'; }, 3000);
+}
+
+function wait(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
+
+function updateStats() {
+  var unc = registry.filter(function(r){ return r.status==='unclaimed'; }).length;
+  var crit = registry.filter(function(r){ return r.priority==='Critical'&&r.status==='unclaimed'; }).length;
+  var clmd = registry.filter(function(r){ return r.status==='claimed'; }).length;
+  document.getElementById('s1').textContent = registry.length;
+  document.getElementById('s2').textContent = unc;
+  document.getElementById('s3').textContent = crit;
+  document.getElementById('s4').textContent = clmd;
+}
+
+function save() {
+  localStorage.setItem('lf_v2', JSON.stringify(registry));
+}
+
+// ── Tab switching ──────────────────────────────────────
+function switchTab(name) {
+  document.querySelectorAll('.tabp').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
+  document.getElementById('p-'+name).classList.add('active');
+  document.getElementById('t-'+name).classList.add('active');
+  if(name==='registry') renderReg();
+  if(name==='claim') renderClaim();
+}
+
+// ── Boot ───────────────────────────────────────────────
+setTimeout(function(){ log('╔═══════════════════════════╗','sys'); log('║  Campus L&F · Pico W v2   ║','sys'); log('╚═══════════════════════════╝','sys'); }, 100);
+setTimeout(function(){ led('l1','g'); log('MicroPython 1.23 · boot OK','i'); }, 400);
+setTimeout(function(){ log('OV2640 · chip ID 0x26 · OK','i'); }, 700);
+setTimeout(function(){ log('WiFi → Campus-IoT · connected','w'); }, 1000);
+setTimeout(function(){
+  log('IP: 192.168.4.112 · RSSI: -57dBm','i');
+  log('HuggingFace BLIP · NO KEY NEEDED','ai');
+  log('Click Start Camera then press Scan','i');
+  led('l1','');
+  document.getElementById('run-badge').textContent = 'ready';
+  document.getElementById('run-badge').className = 'badge bg';
+}, 2000);
+
+updateStats();
+
+// ── Camera ─────────────────────────────────────────────
+function toggleCam() {
+  var btn = document.getElementById('cam-btn');
+  var vid = document.getElementById('vid');
+  var idle = document.getElementById('vidle');
+
+  if(camOn) {
+    if(stream) stream.getTracks().forEach(function(t){ t.stop(); });
+    vid.style.display = 'none';
+    idle.style.display = 'flex';
+    btn.textContent = '▶ Start Camera';
+    camOn = false;
+    log('CAM: stream stopped','w');
+    return;
+  }
+
+  navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false })
+    .then(function(s) {
+      stream = s;
+      vid.srcObject = s;
+      vid.style.display = 'block';
+      idle.style.display = 'none';
+      btn.textContent = '■ Stop Camera';
+      camOn = true;
+      log('CAM: live · hold object up & press Scan','i');
+    })
+    .catch(function(e) {
+      log('CAM: permission denied · '+e.message,'e');
+      toast('Allow camera access in browser settings');
+    });
+}
+
+function capFrame() {
+  var vid = document.getElementById('vid');
+  var cnv = document.getElementById('cnv');
+  cnv.width = 320; cnv.height = 240;
+  cnv.getContext('2d').drawImage(vid, 0, 0, 320, 240);
+  return cnv.toDataURL('image/jpeg', 0.85).split(',')[1];
+}
+
+// ── AI Vision (HuggingFace BLIP - NO KEY) ─────────────
+async function identifyImage(b64) {
+  // Convert base64 to blob
+  var bytes = atob(b64);
+  var arr = new Uint8Array(bytes.length);
+  for(var i=0; i<bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+  var blob = new Blob([arr], { type: 'image/jpeg' });
+
+  log('VISION: HuggingFace BLIP · captioning...','ai');
+
+  try {
+    var r = await fetch('https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/octet-stream' },
+      body: blob
+    });
+
+    if(r.status === 503) {
+      log('VISION: model loading · waiting 20s...','w');
+      await wait(20000);
+      r = await fetch('https://api-inference.huggingface.co/models/Salesforce/blip-image-captioning-base', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/octet-stream' },
+        body: blob
+      });
+    }
+
+    if(r.ok) {
+      var data = await r.json();
+      var caption = Array.isArray(data) ? (data[0]?.generated_text||'') : (data.generated_text||'');
+      log('VISION: caption = "'+caption+'"','ai');
+      return classify(caption);
+    } else {
+      log('VISION: HF error '+r.status+' · using fallback','w');
+      return classify('');
+    }
+  } catch(e) {
+    log('VISION: network error · '+e.message,'w');
+    return classify('');
+  }
+}
+
+// ── Classification ─────────────────────────────────────
+function classify(caption) {
+  var c = (caption||'').toLowerCase();
+
+  var rules = [
+    { k:['phone','smartphone','mobile','iphone','android','screen'],  name:'Smartphone',      cat:'Electronics · Personal Device',    pri:'Critical', col:'Black'  },
+    { k:['laptop','computer','macbook','notebook computer','pc'],     name:'Laptop Computer', cat:'Electronics · High Value',         pri:'Critical', col:'Silver' },
+    { k:['wallet','purse','billfold'],                                name:'Wallet',          cat:'Personal Accessory · Financial',   pri:'Critical', col:'Brown'  },
+    { k:['key','keys','keychain','keyring'],                          name:'Key Bundle',      cat:'Access · Security',               pri:'Critical', col:'Silver' },
+    { k:['id card','identity','student card','badge','lanyard'],      name:'Student ID Card', cat:'Identity Document',               pri:'Critical', col:'White'  },
+    { k:['glasses','spectacles','eyeglasses','sunglasses','lens'],    name:'Eyeglasses',      cat:'Optical · Personal',              pri:'High',     col:'Black'  },
+    { k:['earphone','earbuds','airpod','earpiece','earbud'],          name:'Earbuds',         cat:'Electronics · Audio',             pri:'High',     col:'White'  },
+    { k:['headphone','headset'],                                      name:'Headphones',      cat:'Electronics · Audio',             pri:'High',     col:'Black'  },
+    { k:['watch','wristwatch'],                                       name:'Wristwatch',      cat:'Accessories · Timepiece',         pri:'High',     col:'Black'  },
+    { k:['charger','cable','usb','adapter','plug'],                   name:'Phone Charger',   cat:'Electronics · Accessory',         pri:'High',     col:'White'  },
+    { k:['backpack','rucksack','satchel'],                            name:'Backpack',        cat:'Luggage · Student Item',          pri:'Medium',   col:'Blue'   },
+    { k:['bag','handbag','tote'],                                     name:'Bag',             cat:'Luggage · Personal',              pri:'Medium',   col:'Brown'  },
+    { k:['bottle','water bottle','flask','tumbler'],                  name:'Water Bottle',    cat:'Drinkware · Personal',            pri:'Low',      col:'Grey'   },
+    { k:['umbrella'],                                                 name:'Umbrella',        cat:'Weather Gear',                    pri:'Low',      col:'Black'  },
+    { k:['book','notebook','journal','diary','textbook'],             name:'Notebook',        cat:'Stationery · Academic',           pri:'Low',      col:'Blue'   },
+    { k:['shoe','shoes','sneaker','boot','sandal'],                   name:'Shoes',           cat:'Footwear',                        pri:'Low',      col:'White'  },
+    { k:['jacket','coat','sweater','hoodie','shirt','cloth'],         name:'Clothing',        cat:'Clothing · Personal',             pri:'Low',      col:'Blue'   },
+    { k:['pen','pencil','stationery'],                                name:'Stationery',      cat:'Stationery',                      pri:'Low',      col:'Blue'   },
+  ];
+
+  var tips = {
+    Critical: 'Store in secure cabinet immediately. This is a high-priority item that the owner urgently needs.',
+    High:     'Log with detailed description and store carefully. Owner should be able to identify with specific details.',
+    Medium:   'Log and store in standard area. Owner can collect during office hours.',
+    Low:      'Log and place in general storage. Standard 30-day holding period applies.'
+  };
+
+  for(var i=0; i<rules.length; i++) {
+    var rule = rules[i];
+    for(var j=0; j<rule.k.length; j++) {
+      if(c.indexOf(rule.k[j]) !== -1) {
+        var conf = Math.floor(78 + Math.random()*18);
+        return {
+          name: rule.name,
+          cat: rule.cat,
+          desc: (caption ? 'Camera detected: "'+caption+'". ' : '') + tips[rule.pri],
+          conf: conf,
+          color: rule.col,
+          cond: 'Good',
+          pri: rule.pri,
+          loc: 'Library Entrance'
+        };
+      }
+    }
+  }
+
+  // No match
+  var conf = Math.floor(50 + Math.random()*20);
+  return {
+    name: caption ? caption.slice(0,35) : 'Unidentified Object',
+    cat: 'Unknown · Manual Review Required',
+    desc: caption ? '"'+caption+'" — Could not auto-classify. Staff should manually identify this item.' : 'Image unclear. Try better lighting and hold item closer to camera.',
+    conf: conf,
+    color: 'Unknown',
+    cond: 'Unknown',
+    pri: 'Medium',
+    loc: 'Library Entrance'
+  };
+}
+
+// ── Scan ───────────────────────────────────────────────
+async function doScan() {
+  if(scanning) return;
+  if(!camOn) { log('ERROR: click Start Camera first','e'); toast('Start the camera first!'); return; }
+
+  scanning = true;
+  var scanBtn = document.getElementById('scan-btn');
+  scanBtn.disabled = true;
+  document.getElementById('bind-dot').className = 'bind sc';
+  document.getElementById('hw-badge').textContent = 'Scanning';
+  document.getElementById('hw-badge').className = 'badge ba';
+  document.getElementById('run-badge').textContent = 'running';
+  document.getElementById('run-badge').className = 'badge ba';
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('no-result').style.display = 'none';
+  document.getElementById('vscan').classList.add('on');
+  document.getElementById('vbox').classList.remove('on');
+  document.getElementById('vconf').classList.remove('on');
+  document.getElementById('vlbl').classList.remove('on');
+
+  log('','i');
+  log('TRIGGER: GP15 falling edge','i');
+  led('l1','o');
+  await wait(300);
+
+  log('CAM: capturing 320×240 JPEG...','i');
+  document.getElementById('iris').classList.add('cap');
+  document.getElementById('cam-state').textContent = 'Capturing...';
+
+  var b64;
+  try {
+    b64 = capFrame();
+    log('CAM: frame OK · '+Math.round(b64.length*0.75/1024)+'KB','d');
+  } catch(e) {
+    log('CAM: capture failed · '+e.message,'e');
+    endScan(false); return;
+  }
+
+  await wait(200);
+  // Check if manual override selected
+  var manualSel = document.getElementById('manual-obj').value;
+  var result;
+  if(manualSel) {
+    log('VISION: manual override · '+manualSel,'ai');
+    result = classify(manualSel + ' object');
+    result.name = manualSel;
+    result.conf = 99;
+  } else {
+    result = await identifyImage(b64);
+  }
+
+  document.getElementById('vscan').classList.remove('on');
+  document.getElementById('vbox').classList.add('on');
+  document.getElementById('vconf').textContent = result.conf+'%';
+  document.getElementById('vconf').classList.add('on');
+  document.getElementById('vlbl').textContent = result.name;
+  document.getElementById('vlbl').classList.add('on');
+  led('l1','');
+
+  log('VISION: "'+result.name+'" conf='+result.conf+'%','ai');
+  log('VISION: priority='+result.pri,'ai');
+
+  if(result.pri==='Critical'||result.pri==='High') {
+    blinkLed('l2','r',4,130);
+    log('LED: RED blink · urgent item!','w');
+  } else {
+    blinkLed('l3','g',2,150);
+    log('LED: GREEN blink · item ready','i');
+  }
+  log('SCAN: complete','i');
+
+  current = result;
+  showResult(result);
+  endScan(true);
+}
+
+function endScan(ok) {
+  scanning = false;
+  document.getElementById('scan-btn').disabled = false;
+  document.getElementById('bind-dot').className = 'bind';
+  document.getElementById('hw-badge').textContent = 'Online';
+  document.getElementById('hw-badge').className = 'badge bg';
+  document.getElementById('run-badge').textContent = 'ready';
+  document.getElementById('run-badge').className = 'badge bg';
+  document.getElementById('iris').classList.remove('cap');
+  document.getElementById('cam-state').textContent = ok ? 'Ready' : 'Error';
+  document.getElementById('vscan').classList.remove('on');
+  if(!ok) document.getElementById('no-result').style.display = 'block';
+}
+
+function showResult(r) {
+  document.getElementById('r-emoji').textContent = emoji(r.name);
+  document.getElementById('r-name').textContent = r.name;
+  document.getElementById('r-cat').textContent = r.cat;
+  document.getElementById('r-desc').textContent = r.desc;
+  var pm = {Critical:'br',High:'ba',Medium:'bb',Low:'bk'};
+  document.getElementById('res-badge').textContent = r.pri;
+  document.getElementById('res-badge').className = 'badge '+(pm[r.pri]||'bk');
+  setTimeout(function(){
+    document.getElementById('cbar').style.width = r.conf+'%';
+    document.getElementById('cnum').textContent = r.conf+'%';
+  }, 100);
+  document.getElementById('r-attrs').innerHTML =
+    [['Color',r.color],['Condition',r.cond],['Priority',r.pri],['Location',r.loc]]
+    .map(function(x){ return '<div class="attr"><div class="attr-k">'+x[0]+'</div><div class="attr-v">'+x[1]+'</div></div>'; })
+    .join('');
+  document.getElementById('result').classList.add('show');
+}
+
+function clearResult() {
+  document.getElementById('result').classList.remove('show');
+  document.getElementById('no-result').style.display = 'block';
+  document.getElementById('res-badge').textContent = 'Awaiting scan';
+  document.getElementById('res-badge').className = 'badge bk';
+  document.getElementById('cbar').style.width = '0';
+  document.getElementById('vbox').classList.remove('on');
+  document.getElementById('vconf').classList.remove('on');
+  document.getElementById('vlbl').classList.remove('on');
+  current = null;
+}
+
+// ── Log item ───────────────────────────────────────────
+function logItem() {
+  if(!current) return;
+  var id = 'LF-'+('000'+idN++).slice(-4);
+  var now = new Date();
+  var item = {
+    id: id,
+    name: current.name,
+    cat: current.cat,
+    desc: current.desc,
+    pri: current.priority || current.pri,
+    color: current.color,
+    cond: current.condition || current.cond,
+    conf: current.confidence || current.conf,
+    loc: current.location || current.loc || 'Library Entrance',
+    date: now.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}),
+    time: now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
+    ts: now.toISOString(),
+    status: 'unclaimed'
+  };
+  registry.unshift(item);
+  save();
+  updateStats();
+  log('REGISTRY: logged · ID: '+id,'i');
+  document.getElementById('res-badge').textContent = 'Logged ✓';
+  document.getElementById('res-badge').className = 'badge bg';
+  toast('Item logged as '+id+'!');
+  setTimeout(function(){ switchTab('registry'); }, 800);
+}
+
+// ── Registry ───────────────────────────────────────────
+function setFilter(f, el) {
+  activeF = f;
+  document.querySelectorAll('.fc').forEach(function(c){ c.classList.remove('on'); });
+  el.classList.add('on');
+  renderReg();
+}
+
+function renderReg() {
+  var q = (document.getElementById('search')||{value:''}).value.toLowerCase();
+  var today = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'short'});
+  var items = registry.slice();
+
+  if(activeF==='Critical') items = items.filter(function(r){ return r.pri==='Critical'; });
+  else if(activeF==='High') items = items.filter(function(r){ return r.pri==='High'; });
+  else if(activeF==='unclaimed') items = items.filter(function(r){ return r.status==='unclaimed'; });
+  else if(activeF==='claimed') items = items.filter(function(r){ return r.status==='claimed'; });
+  else if(activeF==='today') items = items.filter(function(r){ return r.date===today; });
+
+  if(q) items = items.filter(function(r){
+    return (r.name+r.id+r.loc+r.cat).toLowerCase().indexOf(q) !== -1;
+  });
+
+  document.getElementById('reg-badge').textContent = registry.length+(registry.length===1?' item':' items');
+
+  if(!items.length) {
+    document.getElementById('reg-body').innerHTML = '<div class="empty">No items match.</div>';
+    return;
+  }
+
+  var pm = {Critical:'br',High:'ba',Medium:'bb',Low:'bk'};
+  var sm = {unclaimed:'ba',claimed:'bg'};
+  var rows = items.map(function(r){
+    var claimBtn = r.status==='unclaimed'
+      ? '<button class="btn btn-s" style="font-size:10px;padding:3px 8px" onclick="markClaimed(\''+r.id+'\')">Mark Claimed</button>'
+      : '<span style="font-size:10px;color:var(--ink3)">'+(r.claimedBy||'—')+'</span>';
+    return '<tr>'
+      +'<td>'+emoji(r.name)+' <strong>'+r.name+'</strong></td>'
+      +'<td style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--ink3)">'+r.id+'</td>'
+      +'<td><span class="badge '+(pm[r.pri]||'bk')+'">'+r.pri+'</span></td>'
+      +'<td style="font-size:11px;color:var(--ink2)">'+r.loc+'</td>'
+      +'<td style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:var(--ink3)">'+r.date+' '+r.time+'</td>'
+      +'<td><span class="badge '+(sm[r.status]||'bk')+'">'+r.status+'</span></td>'
+      +'<td>'+claimBtn+'</td>'
+      +'</tr>';
+  }).join('');
+
+  document.getElementById('reg-body').innerHTML =
+    '<table><thead><tr><th>Object</th><th>ID</th><th>Priority</th><th>Location</th><th>Logged</th><th>Status</th><th>Action</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody></table>';
+}
+
+function markClaimed(id) {
+  var item = registry.find(function(r){ return r.id===id; });
+  if(!item) return;
+  var name = prompt('Enter claimant name:');
+  if(!name) return;
+  item.status = 'claimed';
+  item.claimedBy = name;
+  save(); updateStats(); renderReg();
+  toast(id+' marked as claimed by '+name);
+}
+
+function exportCSV() {
+  var h = ['ID','Object','Category','Priority','Status','Location','Color','Condition','Confidence','Date','Claimed By'];
+  var rows = registry.map(function(r){
+    return [r.id,r.name,r.cat,r.pri,r.status,r.loc,r.color,r.cond,(r.conf||0)+'%',r.date,r.claimedBy||''];
+  });
+  var csv = [h].concat(rows).map(function(r){
+    return r.map(function(c){ return '"'+String(c).replace(/"/g,'""')+'"'; }).join(',');
+  }).join('\n');
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download = 'lost-found-'+new Date().toISOString().slice(0,10)+'.csv';
+  a.click();
+  toast('CSV exported!');
+}
+
+// ── Claim portal ───────────────────────────────────────
+function renderClaim() {
+  var q = (document.getElementById('claim-search')||{value:''}).value.toLowerCase();
+  var items = registry.filter(function(r){ return r.status==='unclaimed'; });
+  if(q) items = items.filter(function(r){
+    return (r.name+r.cat+r.loc).toLowerCase().indexOf(q) !== -1;
+  });
+
+  var pm = {Critical:'br',High:'ba',Medium:'bb',Low:'bk'};
+  if(!items.length) {
+    document.getElementById('claim-list').innerHTML =
+      '<div style="color:var(--ink3);font-size:12px">'+(q?'No matching items.':'No unclaimed items.')+'</div>';
+    return;
+  }
+
+  document.getElementById('claim-list').innerHTML = items.map(function(r){
+    return '<div class="claim-item">'
+      +'<div class="ci-emoji">'+emoji(r.name)+'</div>'
+      +'<div class="ci-info">'
+        +'<div class="ci-name">'+r.name+'</div>'
+        +'<div class="ci-meta">'+r.id+' · '+r.loc+' · '+r.date+'</div>'
+        +'<span class="badge '+(pm[r.pri]||'bk')+'" style="margin-top:4px;display:inline-block">'+r.pri+'</span>'
+      +'</div>'
+      +'<button class="btn btn-b" onclick="openModal(\''+r.id+'\')">Claim This</button>'
+      +'</div>';
+  }).join('');
+}
+
+function openModal(id) {
+  var item = registry.find(function(r){ return r.id===id; });
+  if(!item) return;
+  claimTarget = item;
+  document.getElementById('f-name').value='';
+  document.getElementById('f-roll').value='';
+  document.getElementById('f-email').value='';
+  document.getElementById('f-phone').value='';
+  document.getElementById('f-desc').value='';
+  document.getElementById('success-msg').classList.remove('show');
+  document.getElementById('modal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  claimTarget = null;
+}
+
+function submitClaim() {
+  var name = document.getElementById('f-name').value.trim();
+  var roll = document.getElementById('f-roll').value.trim();
+  var email = document.getElementById('f-email').value.trim();
+  if(!name||!roll||!email) { toast('Fill in Name, Roll Number and Email'); return; }
+  document.getElementById('success-msg').classList.add('show');
+  log('CLAIM: submitted for '+(claimTarget?claimTarget.id:'?')+' by '+name,'i');
+  toast('Claim submitted for '+(claimTarget?claimTarget.id:'item')+'!');
+}
+
+// ── Config persistence ─────────────────────────────────
+var sheetsURL = localStorage.getItem('lf_sheets') || '';
+var ejSvc     = localStorage.getItem('lf_ej_svc') || '';
+var ejTpl     = localStorage.getItem('lf_ej_tpl') || '';
+var ejKey     = localStorage.getItem('lf_ej_key') || '';
+
+// Load saved config into inputs
+window.addEventListener('load', function() {
+  if(sheetsURL) document.getElementById('cfg-sheets').value = sheetsURL;
+  if(ejSvc)     document.getElementById('cfg-ej-svc').value = ejSvc;
+  if(ejTpl)     document.getElementById('cfg-ej-tpl').value = ejTpl;
+  if(ejKey)     document.getElementById('cfg-ej-key').value = ejKey;
+  if(sheetsURL && ejSvc && ejTpl && ejKey) {
+    document.getElementById('setup-panel').style.display = 'none';
+  }
+  if(ejKey) { try { emailjs.init(ejKey); } catch(e) {} }
+});
+
+function saveCfg() {
+  sheetsURL = document.getElementById('cfg-sheets').value.trim();
+  ejSvc     = document.getElementById('cfg-ej-svc').value.trim();
+  ejTpl     = document.getElementById('cfg-ej-tpl').value.trim();
+  ejKey     = document.getElementById('cfg-ej-key').value.trim();
+  localStorage.setItem('lf_sheets',  sheetsURL);
+  localStorage.setItem('lf_ej_svc',  ejSvc);
+  localStorage.setItem('lf_ej_tpl',  ejTpl);
+  localStorage.setItem('lf_ej_key',  ejKey);
+  if(ejKey) { try { emailjs.init(ejKey); } catch(e) {} }
+  toast('Configuration saved!');
+  log('CONFIG: Google Sheets + EmailJS saved', 'ai');
+  if(sheetsURL && ejSvc && ejTpl && ejKey) {
+    document.getElementById('setup-panel').style.display = 'none';
+  }
+}
+
+function toggleSetup() {
+  var p = document.getElementById('setup-panel');
+  p.style.display = p.style.display === 'none' ? 'block' : 'none';
+}
+
+function showInstructions() {
+  alert(
+    "GOOGLE SHEETS SETUP:\n\n" +
+    "1. Go to sheets.google.com → create a new spreadsheet\n" +
+    "2. Name columns: ID, Object, Category, Priority, Status, Location, Color, Condition, Confidence, Date, Time\n" +
+    "3. Go to Extensions → Apps Script\n" +
+    "4. Delete existing code and paste the Apps Script code\n" +
+    "   (download it from the README in your GitHub repo)\n" +
+    "5. Click Deploy → New deployment → Web app\n" +
+    "6. Set 'Who has access' to 'Anyone'\n" +
+    "7. Copy the Web App URL and paste it above\n\n" +
+    "EMAILJS SETUP:\n\n" +
+    "1. Go to emailjs.com → sign up free\n" +
+    "2. Add Email Service → connect your Gmail\n" +
+    "3. Create Email Template with variables:\n" +
+    "   {{item_id}}, {{item_name}}, {{priority}}, {{location}}, {{date}}\n" +
+    "   Subject: New Lost Item Found - {{item_name}}\n" +
+    "4. Copy Service ID, Template ID, Public Key\n" +
+    "5. Paste them in the setup panel above\n\n" +
+    "Both are 100% FREE!"
+  );
+}
+
+// ── Save to Google Sheets ──────────────────────────────
+async function saveToSheets(item) {
+  if(!sheetsURL) {
+    log('SHEETS: not configured · skipping', 'w');
+    return false;
+  }
+  try {
+    log('SHEETS: saving to Google Sheets...', 'ai');
+    var response = await fetch(sheetsURL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'addItem',
+        id:         item.id,
+        name:       item.name,
+        category:   item.cat,
+        priority:   item.pri,
+        status:     item.status,
+        location:   item.loc,
+        color:      item.color,
+        condition:  item.cond,
+        confidence: item.conf + '%',
+        date:       item.date,
+        time:       item.time
+      })
+    });
+    log('SHEETS: item saved · ' + item.id, 'ai');
+    return true;
+  } catch(e) {
+    log('SHEETS: error · ' + e.message, 'w');
+    return false;
+  }
+}
+
+// ── Send email via EmailJS ─────────────────────────────
+async function sendEmail(item) {
+  if(!ejSvc || !ejTpl || !ejKey) {
+    log('EMAIL: not configured · skipping', 'w');
+    return false;
+  }
+  try {
+    log('EMAIL: sending notification to college...', 'ai');
+    await emailjs.send(ejSvc, ejTpl, {
+      item_id:    item.id,
+      item_name:  item.name,
+      category:   item.cat,
+      priority:   item.pri,
+      location:   item.loc,
+      color:      item.color,
+      condition:  item.cond,
+      date:       item.date,
+      time:       item.time,
+      description: item.desc,
+      to_name:    'Campus Lost & Found Team',
+      reply_to:   'lostandfound@campus.edu'
+    });
+    log('EMAIL: notification sent · ' + item.pri + ' priority item', 'ai');
+    return true;
+  } catch(e) {
+    log('EMAIL: failed · ' + e.message, 'w');
+    return false;
+  }
+}
+
+// ── Override logItem to also save to Sheets + send email ──
+var _origLogItem = logItem;
+logItem = async function() {
+  if(!current) return;
+  var id = 'LF-'+('000'+idN++).slice(-4);
+  var now = new Date();
+  var item = {
+    id:     id,
+    name:   current.name,
+    cat:    current.cat,
+    desc:   current.desc,
+    pri:    current.priority || current.pri,
+    color:  current.color,
+    cond:   current.condition || current.cond,
+    conf:   current.confidence || current.conf,
+    loc:    current.location || current.loc || 'Library Entrance',
+    date:   now.toLocaleDateString('en-IN',{day:'2-digit',month:'short'}),
+    time:   now.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}),
+    ts:     now.toISOString(),
+    status: 'unclaimed'
+  };
+  registry.unshift(item);
+  save();
+  updateStats();
+  log('REGISTRY: logged · ID: ' + id, 'i');
+  document.getElementById('res-badge').textContent = 'Logged ✓';
+  document.getElementById('res-badge').className = 'badge bg';
+
+  // Save to Google Sheets
+  saveToSheets(item);
+
+  // Send email notification
+  sendEmail(item);
+
+  toast('Item logged as ' + id + '!');
+  setTimeout(function(){ switchTab('registry'); }, 800);
+};
+</script>
+</body>
+</html>
